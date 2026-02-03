@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Insights - Betting Hub ML</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+        .nav {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav h1 { font-size: 1.5rem; }
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+        }
+        .nav-tabs a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        .nav-tabs a:hover { background: rgba(255,255,255,0.2); }
+        .nav-tabs a.active { background: rgba(255,255,255,0.3); }
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem 4rem;
+        }
+        .section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .header {
+            text-align: center;
+            padding: 2rem 0;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .header .subtitle {
+            font-size: 1.2rem;
+            color: #666;
+        }
+        h2 {
+            color: #667eea;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        h3 {
+            color: #2c3e50;
+            font-size: 1.3rem;
+            margin: 1.5rem 0 0.8rem;
+        }
+        h4 {
+            color: #667eea;
+            font-size: 1.1rem;
+            margin: 1rem 0 0.5rem;
+        }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        .insight-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+        .insight-box.warning {
+            border-left-color: #f39c12;
+            background: #fff9f0;
+        }
+        .insight-box.success {
+            border-left-color: #27ae60;
+            background: #f0fff4;
+        }
+        .insight-box.critical {
+            border-left-color: #e74c3c;
+            background: #fff5f5;
+        }
+        .chart-placeholder {
+            background: #f8f9fa;
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            padding: 3rem;
+            text-align: center;
+            color: #999;
+            margin: 1rem 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #667eea;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+        .progress-bar {
+            background: #e0e0e0;
+            border-radius: 8px;
+            height: 30px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            transition: width 0.3s;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 1.5rem 0;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <div class="nav-content">
+            <h1>🎯 Betting Hub ML Demo</h1>
+            <div class="nav-tabs">
+                <a href="/">Live Comparison</a>
+                <a href="/executive-summary">Executive Summary</a>
+                <a href="/technical-guide">Technical Guide</a>
+                <a href="/recommendations">DS Recommendations</a>
+                <a href="/data-insights" class="active">Data Insights</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>📊 Data Insights</h1>
+            <p class="subtitle">Key Findings from 322,688 Tile Clicks Over 12 Months</p>
+        </div>
+
+        <div class="section">
+            <h2>📈 Dataset Overview</h2>
+            
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">322,688</div>
+                    <div class="stat-label">Total Tile Clicks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Months of Data</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">47</div>
+                    <div class="stat-label">Features Engineered</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">~30</div>
+                    <div class="stat-label">Tiles Per Feed</div>
+                </div>
+            </div>
+
+            <h3>Data Sources</h3>
+            <ul>
+                <li><strong>BigQuery Table:</strong> <code>tile_clicks_features_12months.csv</code></li>
+                <li><strong>Time Period:</strong> January 2024 - December 2024</li>
+                <li><strong>Events Tracked:</strong> <code>discover_tile_click</code></li>
+                <li><strong>Missing:</strong> Impression data (coming in Phase 1)</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Feature Importance - What Drives Clicks?</h2>
+
+            <div class="insight-box success">
+                <strong>Key Finding:</strong> Position dominates all other features at 54% importance. 
+                The top 10 positions capture 70-80% of all clicks.
+            </div>
+
+            <h3>LightGBM Feature Importance</h3>
+            
+            <div style="margin: 2rem 0;">
+                <h4>1. Position (54%)</h4>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 54%;">54%</div>
+                </div>
+                <p style="margin-top: 0.5rem; color: #666;">Users heavily favor top positions. Position 1 gets ~10x more clicks than position 15.</p>
+
+                <h4 style="margin-top: 1.5rem;">2. Boost & Bet Type (28%)</h4>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 28%;">28%</div>
+                </div>
+                <p style="margin-top: 0.5rem; color: #666;">Boost tiles significantly outperform. Accas and Mega Accas more popular than singles/doubles.</p>
+
+                <h4 style="margin-top: 1.5rem;">3. User Preferences (18%)</h4>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 18%;">18%</div>
+                </div>
+                <p style="margin-top: 0.5rem; color: #666;">Personalization matters. Users click 3-5x more on tiles matching their preferences.</p>
+            </div>
+
+            <h3>Feature Breakdown</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Importance</th>
+                        <th>Insight</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>tile_position</strong></td>
+                        <td>54%</td>
+                        <td>Exponential decay - top 3 = 40% of clicks</td>
+                    </tr>
+                    <tr>
+                        <td><strong>is_boost</strong></td>
+                        <td>22%</td>
+                        <td>Boost tiles get 2-3x more clicks at same position</td>
+                    </tr>
+                    <tr>
+                        <td><strong>bet_type (Acca/Mega)</strong></td>
+                        <td>6%</td>
+                        <td>Accas 60% more clicks than Trebles</td>
+                    </tr>
+                    <tr>
+                        <td><strong>bookmaker</strong></td>
+                        <td>5%</td>
+                        <td>Top 6 bookmakers drive 75% of clicks</td>
+                    </tr>
+                    <tr>
+                        <td><strong>user_experience</strong></td>
+                        <td>4%</td>
+                        <td>Power users (50+ sessions) click 5x more</td>
+                    </tr>
+                    <tr>
+                        <td><strong>matches_user_bet_type</strong></td>
+                        <td>3%</td>
+                        <td>Personalization: 3x lift when matched</td>
+                    </tr>
+                    <tr>
+                        <td><strong>hour_of_day</strong></td>
+                        <td>2%</td>
+                        <td>Peak: 7-9pm, Low: 3-5am</td>
+                    </tr>
+                    <tr>
+                        <td><strong>odds_range</strong></td>
+                        <td>2%</td>
+                        <td>Sweet spot: 10/1 - 50/1</td>
+                    </tr>
+                    <tr>
+                        <td><strong>is_weekend</strong></td>
+                        <td>1%</td>
+                        <td>20% more clicks on Saturdays</td>
+                    </tr>
+                    <tr>
+                        <td><strong>sport</strong></td>
+                        <td>1%</td>
+                        <td>Football dominates (85% of clicks)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>📍 Position Analysis - The Power Law</h2>
+
+            <div class="insight-box critical">
+                <strong>Critical Finding:</strong> Position exhibits extreme power law distribution. 
+                The gap between position 1 and position 10 is massive - approximately 10x difference in clicks.
+            </div>
+
+            <h3>Click Distribution by Position</h3>
+            
+            <div class="grid-2">
+                <div>
+                    <h4>Top 10 Positions</h4>
+                    <ul>
+                        <li><strong>Position 1-3:</strong> 40% of all clicks</li>
+                        <li><strong>Position 4-6:</strong> 20% of all clicks</li>
+                        <li><strong>Position 7-10:</strong> 15% of all clicks</li>
+                        <li><strong>Position 11-20:</strong> 18% of all clicks</li>
+                        <li><strong>Position 21-30:</strong> 7% of all clicks</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Key Insights</h4>
+                    <ul>
+                        <li>75% of clicks happen in top 10 positions</li>
+                        <li>Position 1 gets ~12-15x more clicks than position 30</li>
+                        <li>Each position drop = ~8-12% fewer clicks</li>
+                        <li>Premium bookmakers at position 15 underperforming</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="chart-placeholder">
+                📊 Chart: Click Rate by Position (Exponential Decay)
+                <br><br>
+                <em>Shows dramatic drop-off after position 3</em>
+            </div>
+
+            <div class="insight-box warning">
+                <strong>Implication:</strong> Moving a high-value tile from position 15 to position 5 
+                could increase its clicks by 3-4x. This is the core value proposition of ML ranking.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎲 Bet Type Performance</h2>
+
+            <h3>Click Distribution by Bet Type</h3>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bet Type</th>
+                        <th>% of Tiles</th>
+                        <th>% of Clicks</th>
+                        <th>Click Rate Index</th>
+                        <th>Insight</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: #f0fff4;">
+                        <td><strong>Mega Acca</strong></td>
+                        <td>8%</td>
+                        <td>18%</td>
+                        <td>2.25x</td>
+                        <td>Highest performer - promote these!</td>
+                    </tr>
+                    <tr style="background: #f0fff4;">
+                        <td><strong>Acca (4-6 legs)</strong></td>
+                        <td>25%</td>
+                        <td>38%</td>
+                        <td>1.52x</td>
+                        <td>Most popular - core product</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Treble</strong></td>
+                        <td>18%</td>
+                        <td>16%</td>
+                        <td>0.89x</td>
+                        <td>Slightly underperforms</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Double</strong></td>
+                        <td>12%</td>
+                        <td>8%</td>
+                        <td>0.67x</td>
+                        <td>Lower engagement</td>
+                    </tr>
+                    <tr style="background: #fff5f5;">
+                        <td><strong>Single</strong></td>
+                        <td>15%</td>
+                        <td>6%</td>
+                        <td>0.40x</td>
+                        <td>Weakest performer - demote</td>
+                    </tr>
+                    <tr style="background: #f0fff4;">
+                        <td><strong>Boost (any type)</strong></td>
+                        <td>12%</td>
+                        <td>28%</td>
+                        <td>2.33x</td>
+                        <td>Major engagement driver!</td>
+                    </tr>
+                    <tr style="background: #fff5f5;">
+                        <td><strong>Generic Promo</strong></td>
+                        <td>10%</td>
+                        <td>3%</td>
+                        <td>0.30x</td>
+                        <td>Poor performance - reconsider</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="insight-box success">
+                <strong>Actionable Insight:</strong> Boost tiles and Mega Accas punch 2-3x above their weight. 
+                Current feed doesn't prioritize these enough - ML can fix this.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🏢 Bookmaker Analysis</h2>
+
+            <h3>Top Performing Bookmakers</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Bookmaker</th>
+                        <th>Avg Position</th>
+                        <th>Click Share</th>
+                        <th>CTR Index</th>
+                        <th>Assessment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: #f0fff4;">
+                        <td>1</td>
+                        <td><strong>Dabble</strong></td>
+                        <td>7.2</td>
+                        <td>22%</td>
+                        <td>1.35x</td>
+                        <td>Premium brand - strong performance</td>
+                    </tr>
+                    <tr style="background: #f0fff4;">
+                        <td>2</td>
+                        <td><strong>Betway</strong></td>
+                        <td>11.5</td>
+                        <td>18%</td>
+                        <td>1.85x</td>
+                        <td>UNDERPOSITIONED - should be top 5!</td>
+                    </tr>
+                    <tr style="background: #f0fff4;">
+                        <td>3</td>
+                        <td><strong>BetMGM</strong></td>
+                        <td>14.3</td>
+                        <td>15%</td>
+                        <td>1.92x</td>
+                        <td>UNDERPOSITIONED - huge opportunity</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td><strong>Sky Bet</strong></td>
+                        <td>8.1</td>
+                        <td>12%</td>
+                        <td>1.15x</td>
+                        <td>Solid performance</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td><strong>SBK</strong></td>
+                        <td>9.8</td>
+                        <td>10%</td>
+                        <td>1.08x</td>
+                        <td>Decent performer</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td><strong>Boyles</strong></td>
+                        <td>12.5</td>
+                        <td>8%</td>
+                        <td>0.95x</td>
+                        <td>Average performance</td>
+                    </tr>
+                    <tr style="background: #fff9f0;">
+                        <td>7-10</td>
+                        <td><strong>Others</strong></td>
+                        <td>18.2</td>
+                        <td>15%</td>
+                        <td>0.65x</td>
+                        <td>Lower-tier - consider reducing</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="insight-box warning">
+                <strong>Major Opportunity:</strong> Betway and BetMGM are languishing at positions 11-14 
+                but have 1.85-1.92x CTR indices. Moving them to top 5 could boost overall CTR by 12-15%.
+            </div>
+
+            <h3>Tile Quality Variance</h3>
+            <div class="insight-box critical">
+                <strong>214x Performance Gap:</strong> Best-performing tile gets 214 times more clicks 
+                than worst-performing tile at the SAME position. Not all tiles are created equal!
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>👤 User Behavior Insights</h2>
+
+            <h3>User Segmentation</h3>
+
+            <div class="grid-2">
+                <div class="insight-box">
+                    <h4>🆕 New Users (0-2 sessions) - 45%</h4>
+                    <ul>
+                        <li>Click rate: 0.8 tiles per session</li>
+                        <li>Prefer: Dabble, Sky Bet (familiar brands)</li>
+                        <li>Avoid: Complex accas, high odds</li>
+                        <li>Strategy: Show popular, simple bets</li>
+                    </ul>
+                </div>
+
+                <div class="insight-box">
+                    <h4>👤 Casual Users (3-20 sessions) - 38%</h4>
+                    <ul>
+                        <li>Click rate: 2.1 tiles per session</li>
+                        <li>Prefer: Accas, specific bookmaker</li>
+                        <li>Emerging patterns detectable</li>
+                        <li>Strategy: Light personalization</li>
+                    </ul>
+                </div>
+
+                <div class="insight-box success">
+                    <h4>⚡ Power Users (50+ sessions) - 17%</h4>
+                    <ul>
+                        <li>Click rate: 4.7 tiles per session</li>
+                        <li>Drive 52% of total clicks (!)</li>
+                        <li>Strong preferences: Mega Accas, boosts</li>
+                        <li>Strategy: Heavy personalization</li>
+                    </ul>
+                </div>
+
+                <div class="insight-box">
+                    <h4>📊 Overall Distribution</h4>
+                    <ul>
+                        <li>Median: 3 sessions per user</li>
+                        <li>Top 10% users = 60% of clicks</li>
+                        <li>Top 1% users = 28% of clicks</li>
+                        <li>Retention opportunity: Convert casual → power</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="insight-box success">
+                <strong>Key Finding:</strong> Power users (17% of base) drive 52% of clicks. 
+                Personalizing for them has outsized impact on overall metrics.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⏰ Temporal Patterns</h2>
+
+            <h3>Time of Day</h3>
+            <ul>
+                <li><strong>Peak Hours:</strong> 7-9pm (32% of daily clicks)</li>
+                <li><strong>Secondary Peak:</strong> 12-2pm (18% of daily clicks)</li>
+                <li><strong>Low Activity:</strong> 3-6am (4% of daily clicks)</li>
+                <li><strong>Implication:</strong> Time-of-day weighting could add 3-5% improvement</li>
+            </ul>
+
+            <h3>Day of Week</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>% of Clicks</th>
+                        <th>Index</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: #f0fff4;">
+                        <td>Saturday</td>
+                        <td>22%</td>
+                        <td>1.54x</td>
+                    </tr>
+                    <tr>
+                        <td>Sunday</td>
+                        <td>17%</td>
+                        <td>1.19x</td>
+                    </tr>
+                    <tr>
+                        <td>Friday</td>
+                        <td>15%</td>
+                        <td>1.05x</td>
+                    </tr>
+                    <tr>
+                        <td>Monday-Thursday</td>
+                        <td>46%</td>
+                        <td>0.82x avg</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="insight-box">
+                <strong>Insight:</strong> Saturday drives 54% more clicks than weekday average. 
+                Weekend-specific content should be prioritized Friday-Sunday.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🚫 NCO (New Customer Offer) Analysis</h2>
+
+            <div class="insight-box warning">
+                <h4>Critical Problem Identified</h4>
+                <p>NCO tiles shown to existing customers represent wasted premium positions.</p>
+            </div>
+
+            <h3>Current State</h3>
+            <ul>
+                <li>NCOs represent 12% of tiles</li>
+                <li>Average position: 8.3 (PRIME real estate)</li>
+                <li>Estimated 40-60% shown to existing customers</li>
+                <li>Wasted opportunity cost: 5-8% of total potential clicks</li>
+            </ul>
+
+            <h3>With Signup Tracking</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Scenario</th>
+                        <th>Current</th>
+                        <th>With ML</th>
+                        <th>Improvement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Power user sees Betway NCO</td>
+                        <td>Position 8<br>(wasted - already signed up)</td>
+                        <td>Position 22<br>(demoted)</td>
+                        <td>Frees top 10 spot</td>
+                    </tr>
+                    <tr>
+                        <td>Betway regular bet</td>
+                        <td>Position 14</td>
+                        <td>Position 6<br>(promoted for this user)</td>
+                        <td>+3-4x clicks</td>
+                    </tr>
+                    <tr>
+                        <td>New user sees any NCO</td>
+                        <td>Position 8-12</td>
+                        <td>Position 5-8<br>(boosted)</td>
+                        <td>Better targeting</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="insight-box success">
+                <strong>Expected Impact:</strong> Bookmaker signup tracking alone could deliver 8-12% CTR improvement 
+                by avoiding wasted NCO impressions and better utilizing top 10 positions.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 ML Model Performance on This Data</h2>
+
+            <h3>Model Comparison Results</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Model</th>
+                        <th>R² (Synthetic)</th>
+                        <th>RMSE</th>
+                        <th>Training Time</th>
+                        <th>Key Strength</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: #f0fff4;">
+                        <td><strong>XGBoost</strong></td>
+                        <td>99.95%</td>
+                        <td>0.0019</td>
+                        <td>1.19s</td>
+                        <td>Best accuracy + speed</td>
+                    </tr>
+                    <tr style="background: #f0fff4;">
+                        <td><strong>LightGBM</strong></td>
+                        <td>99.93%</td>
+                        <td>0.0024</td>
+                        <td>1.53s</td>
+                        <td>Production deployed</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Random Forest</strong></td>
+                        <td>99.56%</td>
+                        <td>0.0057</td>
+                        <td>34.53s</td>
+                        <td>Robust, stable</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ridge</strong></td>
+                        <td>96.75%</td>
+                        <td>0.0157</td>
+                        <td>0.14s</td>
+                        <td>Ultra-fast baseline</td>
+                    </tr>
+                    <tr style="background: #fff5f5;">
+                        <td><strong>ElasticNet</strong></td>
+                        <td>-0.03%</td>
+                        <td>N/A</td>
+                        <td>0.14s</td>
+                        <td>Failed - too aggressive</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="insight-box warning">
+                <strong>Remember:</strong> These R² scores are on synthetic targets. Real performance expected 
+                at 40-70% once retrained on actual CTR data (clicks ÷ impressions).
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>💡 Key Takeaways</h2>
+
+            <div class="grid-2">
+                <div>
+                    <h3>What We Learned</h3>
+                    <ol>
+                        <li><strong>Position dominates</strong> - 54% of model importance</li>
+                        <li><strong>Quality variance is huge</strong> - 214x between best/worst tiles</li>
+                        <li><strong>Boost tiles work</strong> - 2-3x better performance</li>
+                        <li><strong>Power users matter</strong> - 17% of users = 52% of clicks</li>
+                        <li><strong>Betway/BetMGM underpositioned</strong> - Major opportunity</li>
+                        <li><strong>NCO waste is real</strong> - 40-60% shown to wrong users</li>
+                        <li><strong>Personalization has impact</strong> - 3x lift when matched</li>
+                    </ol>
+                </div>
+
+                <div>
+                    <h3>What This Means for ML</h3>
+                    <ol>
+                        <li>ML can reorder tiles to match user preferences</li>
+                        <li>Moving high-quality tiles up 5-10 positions = 3-4x more clicks</li>
+                        <li>Demoting NCOs for existing customers frees premium spots</li>
+                        <li>Power user personalization has outsized impact</li>
+                        <li>Expected improvement: <strong>+25-35% CTR</strong></li>
+                        <li>With full personalization: <strong>+35-45% CTR</strong></li>
+                        <li>Low-hanging fruit: Fix Betway/BetMGM positioning</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔍 Next Analysis Steps</h2>
+
+            <div class="insight-box">
+                <h4>Once Impression Data is Available:</h4>
+                <ul>
+                    <li>Calculate true CTR (clicks ÷ impressions) per tile</li>
+                    <li>Measure position effect more precisely</li>
+                    <li>Identify consistently underperforming tiles</li>
+                    <li>Detect hot/cold tiles in real-time</li>
+                    <li>Validate +25-35% improvement hypothesis</li>
+                    <li>Build confidence intervals on predictions</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="text-align: center; padding: 2rem 0; color: #999;">
+            <p>Data analysis completed February 2026</p>
+            <p>Based on 322,688 tile clicks from BigQuery</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Summary - Betting Hub ML</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+        .nav {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav h1 { font-size: 1.5rem; }
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+        }
+        .nav-tabs a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        .nav-tabs a:hover { background: rgba(255,255,255,0.2); }
+        .nav-tabs a.active { background: rgba(255,255,255,0.3); }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem 4rem;
+        }
+        .exec-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .exec-header {
+            text-align: center;
+            padding: 2rem 0;
+        }
+        .exec-header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .exec-header .subtitle {
+            font-size: 1.2rem;
+            color: #666;
+        }
+        h2 {
+            color: #667eea;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        h3 {
+            color: #2c3e50;
+            font-size: 1.3rem;
+            margin: 1.5rem 0 0.8rem;
+        }
+        h4 {
+            color: #667eea;
+            font-size: 1.1rem;
+            margin: 1rem 0 0.5rem;
+        }
+        p, li {
+            margin-bottom: 0.8rem;
+        }
+        .highlight {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffe8a1 100%);
+            border-left: 4px solid #ffc107;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        .warning {
+            background: #fff9f0;
+            border-left: 4px solid #f39c12;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        .success {
+            background: #f0fff4;
+            border-left: 4px solid #27ae60;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        .critical {
+            background: #fff5f5;
+            border-left: 4px solid #e74c3c;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .metric {
+            text-align: center;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+        }
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .metric-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2rem;
+        }
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: -2rem;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #667eea;
+        }
+        .timeline-item:after {
+            content: '';
+            position: absolute;
+            left: -1.7rem;
+            top: 12px;
+            width: 2px;
+            height: calc(100% - 12px);
+            background: #e0e0e0;
+        }
+        .timeline-item:last-child:after {
+            display: none;
+        }
+        ul {
+            margin-left: 2rem;
+        }
+        li {
+            margin-bottom: 0.5rem;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <div class="nav-content">
+            <h1>🎯 Betting Hub ML Demo</h1>
+            <div class="nav-tabs">
+                <a href="/">Live Comparison</a>
+                <a href="/executive-summary" class="active">Executive Summary</a>
+                <a href="/technical-guide">Technical Guide</a>
+                <a href="/recommendations">DS Recommendations</a>
+                <a href="/data-insights">Data Insights</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="exec-header">
+            <h1>Executive Summary</h1>
+            <p class="subtitle">ML-Powered Tile Optimization - CTR-First Approach</p>
+        </div>
+
+        <div class="exec-section">
+            <div class="critical">
+                <h2 style="color: #e74c3c; border: none;">🚨 Critical Blocker: Impression Tracking</h2>
+                <p><strong>Everything depends on this.</strong> Without impression data, we cannot:</p>
+                <ul>
+                    <li>Calculate true CTR (clicks ÷ impressions)</li>
+                    <li>Validate the +25-35% improvement claim</li>
+                    <li>Use CTR-based features (15-20% model importance)</li>
+                    <li>Prove business value to stakeholders</li>
+                </ul>
+                <p style="margin-top: 1rem;"><strong>Status:</strong> Phase 1 implementation required - blocks all downstream work</p>
+            </div>
+        </div>
+
+        <div class="exec-section">
+            <h2>💼 What We've Built</h2>
+            <p>Production-ready ML demo analyzing <strong>322,688 clicks</strong> over 12 months:</p>
+            <ul>
+                <li>✅ 5 ML models trained and compared</li>
+                <li>✅ Live API integration with Checkd</li>
+                <li>✅ Interactive demo with personalization</li>
+                <li>✅ Bookmaker signup tracking</li>
+                <li>✅ Fast inference (49ms for 30 tiles)</li>
+            </ul>
+
+            <div class="warning">
+                <strong>Current Limitation:</strong> Model trained on synthetic targets (R² = 99.99% is inflated). 
+                Real performance unknown until we have CTR data.
+            </div>
+        </div>
+
+        <div class="exec-section">
+            <h2>📊 Why CTR Data Changes Everything</h2>
+
+            <div class="grid-2">
+                <div class="card" style="border-left-color: #e74c3c;">
+                    <h4>Current State (Clicks Only)</h4>
+                    <p><strong>Problem:</strong></p>
+                    <pre style="background: #2c3e50; color: white; padding: 1rem; border-radius: 4px; font-size: 0.85em;">Tile A: 1,000 clicks, ? impressions
+Tile B: 1,000 clicks, ? impressions
+
+Can't tell which is better!</pre>
+                </div>
+
+                <div class="card" style="border-left-color: #27ae60;">
+                    <h4>With Impression Data</h4>
+                    <p><strong>Solution:</strong></p>
+                    <pre style="background: #2c3e50; color: white; padding: 1rem; border-radius: 4px; font-size: 0.85em;">Tile A: 1,000 clicks ÷ 10,000 imp = 10% CTR ✅
+Tile B: 1,000 clicks ÷ 50,000 imp = 2% CTR ❌
+
+Tile A is 5x better!</pre>
+                </div>
+            </div>
+
+            <h3>Features Unlocked by CTR</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Importance</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: #f0fff4;">
+                        <td><strong>Tile Previous 7-Day CTR</strong></td>
+                        <td>15-20%</td>
+                        <td>Historical quality proxy</td>
+                    </tr>
+                    <tr style="background: #f0fff4;">
+                        <td><strong>Time-to-Expiry Urgency</strong></td>
+                        <td>8-12%</td>
+                        <td>Tiles closing soon get boost</td>
+                    </tr>
+                    <tr>
+                        <td><strong>CTR Trend</strong></td>
+                        <td>4-6%</td>
+                        <td>Improving vs declining</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Position-Specific CTR</strong></td>
+                        <td>6-8%</td>
+                        <td>Performance at each position</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="success">
+                <strong>Total Impact:</strong> CTR-based features add +20-30% to model performance beyond position-only baseline
+            </div>
+        </div>
+
+        <div class="exec-section">
+            <h2>🚀 Implementation Requirements</h2>
+
+            <h3>Phase 1: Impression Tracking (URGENT)</h3>
+
+            <div class="critical">
+                <h4>Implement Event: <code>discover_tile_impression</code></h4>
+                <p><strong>When to fire:</strong> Once per tile per session when >50% visible in viewport</p>
+                <p><strong>Deduplication:</strong> Session-level (Firebase handles this automatically)</p>
+                
+                <h4 style="margin-top: 1.5rem;">Required Parameters:</h4>
+                <ul>
+                    <li><code>tile_id</code> - Join to clicks</li>
+                    <li><code>tile_position</code> - Array index (1-30), NOT "order" field</li>
+                    <li><code>tile_expiry_timestamp</code> - From API "end" field ⚠️ NEW</li>
+                    <li><code>tile_start_timestamp</code> - From API "start" field ⚠️ NEW</li>
+                    <li><code>bookmaker, bet_type, sport, tile_type</code> - From API keywords</li>
+                    <li><code>user_id, session_id, timestamp</code> - From analytics</li>
+                </ul>
+
+                <p style="margin-top: 1rem;"><strong>Timeline:</strong> 3-5 days implementation + 4 weeks data collection</p>
+            </div>
+        </div>
+
+        <div class="exec-section">
+            <h2>📅 Timeline to Validated Results</h2>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h3>✅ Now: Demo Ready</h3>
+                    <p>Interactive prototype with 5 models, live API, personalization</p>
+                </div>
+
+                <div class="timeline-item">
+                    <h3>Week 1: Impression Tracking</h3>
+                    <p>Engineering implements event, verifies data flowing to BigQuery</p>
+                </div>
+
+                <div class="timeline-item">
+                    <h3>Weeks 2-5: Data Collection</h3>
+                    <p>Accumulate 4 weeks of impression + click data (cannot be accelerated)</p>
+                </div>
+
+                <div class="timeline-item">
+                    <h3>Week 6: Real Model Training</h3>
+                    <ul>
+                        <li>Calculate actual CTR from impressions</li>
+                        <li>Engineer CTR-based features</li>
+                        <li>Retrain models with real targets</li>
+                        <li><strong>Decision point:</strong> If R² &lt; 50%, re-evaluate</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <h3>Weeks 7-10: A/B Testing</h3>
+                    <ul>
+                        <li>50% ML ranking, 50% current ranking</li>
+                        <li>Measure actual CTR improvement</li>
+                        <li>Validate +25-35% hypothesis</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <h3>Week 11+: Production</h3>
+                    <p>Full rollout with real-time hot/cold tile detection</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="exec-section">
+            <h2>🎯 Expected Business Impact</h2>
+
+            <div class="grid-3">
+                <div class="metric">
+                    <div class="metric-value">+15-25%</div>
+                    <div class="metric-label">Conservative</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">+25-35%</div>
+                    <div class="metric-label">Expected</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">+35-45%</div>
+                    <div class="metric-label">With Real-Time</div>
+                </div>
+            </div>
+
+            <p style="margin-top: 2rem; text-align: center;"><strong>⚠️ These are projections. Week 6 validation will confirm actual performance.</strong></p>
+        </div>
+
+        <div class="exec-section">
+            <h2>📞 Immediate Next Steps</h2>
+
+            <ol style="font-size: 1.1rem;">
+                <li><strong>This Week:</strong> Engineering implements impression tracking</li>
+                <li><strong>This Week:</strong> Add expiry/start timestamps to events</li>
+                <li><strong>Weeks 2-5:</strong> Data collection (4 weeks minimum)</li>
+                <li><strong>Week 6:</strong> Retrain and validate - this is when we know if it works</li>
+            </ol>
+
+            <div class="critical" style="margin-top: 2rem;">
+                <h3 style="color: #e74c3c;">🚨 Key Message for Stakeholders</h3>
+                <p style="font-size: 1.1rem;">
+                    We have proven the <strong>technology</strong> works. Now we need impression data to prove the <strong>business value</strong>. 
+                    Results available in 6 weeks, full deployment in 11 weeks.
+                </p>
+            </div>
+        </div>
+
+        <div style="text-align: center; padding: 2rem 0; color: #999;">
+            <p>Last Updated: February 2026</p>
+            <p>Version: 2.0 - CTR-First Approach</p>
+        </div>
+    </div>
+</body>
+</html>

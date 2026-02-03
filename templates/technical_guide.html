@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technical Guide - Betting Hub ML</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Consolas', monospace;
+            background: #f5f7fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+        .nav {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav h1 { font-size: 1.5rem; }
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+        }
+        .nav-tabs a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        .nav-tabs a:hover { background: rgba(255,255,255,0.2); }
+        .nav-tabs a.active { background: rgba(255,255,255,0.3); }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem 4rem;
+        }
+        .section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .header {
+            text-align: center;
+            padding: 2rem 0;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .header .subtitle {
+            font-size: 1.2rem;
+            color: #666;
+        }
+        h2 {
+            color: #667eea;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        h3 {
+            color: #2c3e50;
+            font-size: 1.3rem;
+            margin: 1.5rem 0 0.8rem;
+        }
+        h4 {
+            color: #667eea;
+            font-size: 1.1rem;
+            margin: 1rem 0 0.5rem;
+        }
+        p, li {
+            margin-bottom: 0.8rem;
+        }
+        ul {
+            margin-left: 2rem;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #e74c3c;
+        }
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        pre code {
+            background: none;
+            color: #ecf0f1;
+            padding: 0;
+        }
+        .highlight {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffe8a1 100%);
+            border-left: 4px solid #ffc107;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        .success {
+            background: #f0fff4;
+            border-left: 4px solid #27ae60;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        .info {
+            background: #f0f8ff;
+            border-left: 4px solid #3498db;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #667eea;
+        }
+        .toc {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        .toc h3 {
+            margin-top: 0;
+        }
+        .toc ul {
+            margin-left: 1rem;
+        }
+        .toc a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <div class="nav-content">
+            <h1>🎯 Betting Hub ML Demo</h1>
+            <div class="nav-tabs">
+                <a href="/">Live Comparison</a>
+                <a href="/executive-summary">Executive Summary</a>
+                <a href="/technical-guide" class="active">Technical Guide</a>
+                <a href="/recommendations">DS Recommendations</a>
+                <a href="/data-insights">Data Insights</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Technical Guide</h1>
+            <p class="subtitle">Complete Reference for ML Tile Ranking System</p>
+        </div>
+
+        <div class="section toc">
+            <h3>📋 Table of Contents</h3>
+            <ul>
+                <li><a href="#demo-usage">Using the Demo</a></li>
+                <li><a href="#models">ML Models Explained</a></li>
+                <li><a href="#features">Feature Engineering</a></li>
+                <li><a href="#personalization">Personalization Logic</a></li>
+                <li><a href="#api">API Integration</a></li>
+                <li><a href="#data-pipeline">Data Pipeline</a></li>
+                <li><a href="#deployment">Deployment Guide</a></li>
+            </ul>
+        </div>
+
+        <div class="section" id="demo-usage">
+            <h2>🎮 Using the Demo</h2>
+            
+            <h3>Quick Start</h3>
+            <pre><code>cd Documents/betting_hub_ml/web_demo_v2
+python app.py</code></pre>
+            
+            <p>Open browser: <code>http://localhost:5000</code></p>
+
+            <h3>Features</h3>
+            <ol>
+                <li><strong>Fetch Latest Tiles</strong> - Pulls live data from Checkd production API</li>
+                <li><strong>Model Selector</strong> - Switch between 5 ML models in real-time</li>
+                <li><strong>User Type Toggle</strong> - Test New User vs Casual vs Power User rankings</li>
+                <li><strong>Image Previews</strong> - Click "Preview" button on any tile</li>
+                <li><strong>Position Changes</strong> - Green = moved up, Red = moved down</li>
+            </ol>
+
+            <h3>Understanding the Display</h3>
+            <ul>
+                <li><strong>Left Column:</strong> Current Checkd production order</li>
+                <li><strong>Middle Column:</strong> ML-optimized order with scores and changes</li>
+                <li><strong>Right Column:</strong> Selected model's performance metrics and details</li>
+                <li><strong>Bottom Summary:</strong> Statistics on tiles moving, score improvement</li>
+            </ul>
+        </div>
+
+        <div class="section" id="models">
+            <h2>🤖 ML Models Explained</h2>
+
+            <h3>1. LightGBM (Active Production Model)</h3>
+            <div class="success">
+                <p><strong>Best for:</strong> Production deployment</p>
+                <p><strong>Why we chose it:</strong></p>
+                <ul>
+                    <li>Perfect balance of speed (20ms) and accuracy (99.93% R²)</li>
+                    <li>Handles categorical features natively (no manual encoding needed)</li>
+                    <li>Memory efficient - can run on standard servers</li>
+                    <li>Strong personalization support</li>
+                </ul>
+            </div>
+
+            <h4>Training Configuration:</h4>
+            <pre><code>model = lgb.LGBMRegressor(
+    n_estimators=100,
+    max_depth=6,
+    learning_rate=0.1,
+    num_leaves=31
+)
+
+# Training data: 322,688 clicks
+# Features: 47 (10 categorical + 37 numerical)
+# Train/test split: 80/20</code></pre>
+
+            <h3>2. XGBoost (Highest Accuracy)</h3>
+            <div class="info">
+                <p><strong>Best for:</strong> Maximum accuracy (when version issues resolved)</p>
+                <p><strong>Performance:</strong></p>
+                <ul>
+                    <li>R²: 99.95% (0.02% better than LightGBM)</li>
+                    <li>Fastest training: 1.19s</li>
+                    <li>Excellent personalization handling</li>
+                    <li>Industry standard for tabular data</li>
+                </ul>
+            </div>
+
+            <h3>3. Random Forest</h3>
+            <p><strong>Best for:</strong> Stability and robustness</p>
+            <ul>
+                <li>R²: 99.56% (still excellent)</li>
+                <li>No hyperparameter tuning needed</li>
+                <li>Very stable predictions (low variance)</li>
+                <li>Trade-off: 23x slower training, 5x slower inference</li>
+            </ul>
+
+            <h3>4. Ridge Regression</h3>
+            <p><strong>Best for:</strong> Speed and interpretability</p>
+            <ul>
+                <li>R²: 96.75% (acceptable for linear model)</li>
+                <li>Ultra-fast: 0.14s training, &lt;5ms inference</li>
+                <li>Interpretable coefficients</li>
+                <li>Good baseline, but can't capture complex interactions</li>
+            </ul>
+
+            <h3>5. ElasticNet (Failed)</h3>
+            <p><strong>Status:</strong> Not recommended</p>
+            <ul>
+                <li>R²: -0.03% (worse than predicting mean)</li>
+                <li>L1 regularization too aggressive - eliminated important features</li>
+                <li>Not suitable for this dataset</li>
+            </ul>
+        </div>
+
+        <div class="section" id="features">
+            <h2>🔧 Feature Engineering</h2>
+
+            <h3>Feature Categories (47 Total)</h3>
+
+            <h4>1. Tile Features (15 features)</h4>
+            <ul>
+                <li><code>tile_position</code> - Array index (1-30)</li>
+                <li><code>bet_type</code> - Acca, Treble, Double, Mega Acca, etc.</li>
+                <li><code>bookmaker</code> - Dabble, Betway, SBK, etc.</li>
+                <li><code>sport</code> - Football, Racing, etc.</li>
+                <li><code>tile_type</code> - Bet, Promo, NCO, Feature Shortcut</li>
+                <li><code>odds_min, odds_max, odds_mid</code> - Parsed from "3/1 - 11/2"</li>
+                <li><code>is_acca, is_mega_acca, is_treble</code> - Binary flags</li>
+                <li><code>is_boost, is_builder, is_rab</code> - Binary flags</li>
+                <li><code>is_top_bookmaker</code> - Premium bookmaker flag</li>
+            </ul>
+
+            <h4>2. Position Features (5 features)</h4>
+            <ul>
+                <li><code>position_bucket</code> - top5, top10, top15, top20, below20</li>
+                <li><code>odds_category</code> - very_short, short, medium, long, very_long</li>
+            </ul>
+
+            <h4>3. Time Features (7 features)</h4>
+            <ul>
+                <li><code>hour_of_day</code> - 0-23</li>
+                <li><code>is_morning, is_lunch, is_afternoon, is_evening, is_night</code></li>
+                <li><code>is_weekend</code> - Saturday/Sunday flag</li>
+            </ul>
+
+            <h4>4. User Features (20 features)</h4>
+            <ul>
+                <li><code>user_experience</code> - log(session_number)</li>
+                <li><code>user_preferred_bet_type</code> - Most clicked bet type</li>
+                <li><code>user_preferred_bookmaker</code> - Most clicked bookmaker</li>
+                <li><code>user_preferred_sport</code> - Most clicked sport</li>
+                <li><code>user_acca_rate</code> - % of clicks on accas</li>
+                <li><code>user_mega_acca_rate</code> - % of clicks on mega accas</li>
+                <li><code>user_boost_rate</code> - % of clicks on boost tiles</li>
+                <li><code>user_avg_odds</code> - Average odds of clicked tiles</li>
+                <li><code>matches_user_bet_type</code> - Does tile match user preference?</li>
+                <li><code>matches_user_bookmaker</code> - Does tile match user preference?</li>
+                <li><code>user_is_power_user</code> - 50+ sessions</li>
+                <li><code>user_loves_accas</code> - Acca rate &gt; 60%</li>
+                <li><code>user_engagement_score</code> - Composite engagement metric</li>
+            </ul>
+
+            <h3>Feature Importance (LightGBM)</h3>
+            <table>
+                <tr>
+                    <th>Feature</th>
+                    <th>Importance</th>
+                    <th>Why It Matters</th>
+                </tr>
+                <tr>
+                    <td>tile_position</td>
+                    <td>54%</td>
+                    <td>Users click top tiles disproportionately</td>
+                </tr>
+                <tr>
+                    <td>is_boost</td>
+                    <td>22%</td>
+                    <td>Boost tiles significantly outperform</td>
+                </tr>
+                <tr>
+                    <td>User preferences</td>
+                    <td>18%</td>
+                    <td>Personalization drives engagement</td>
+                </tr>
+                <tr>
+                    <td>bet_type</td>
+                    <td>6%</td>
+                    <td>Accas more popular than singles</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section" id="personalization">
+            <h2>👤 Personalization Logic</h2>
+
+            <h3>Cold Start Problem</h3>
+            <p>For new users with no history:</p>
+            <ul>
+                <li>Position weight: <strong>54%</strong> (maximum)</li>
+                <li>Bookmaker/bet type: Standard weights</li>
+                <li>Personalization boost: <strong>0%</strong></li>
+                <li>Strategy: Show most popular tiles first</li>
+            </ul>
+
+            <h3>Casual Users (5-20 sessions)</h3>
+            <pre><code># Example: User prefers Dabble Accas
+if tile.bet_type == "Acca" and tile.bookmaker == "Dabble":
+    score += 0.15  # 15% boost
+    
+if tile.tile_type == "NCO" and tile.bookmaker == "Dabble":
+    score -= 0.50  # 50% penalty - already signed up</code></pre>
+
+            <h3>Power Users (50+ sessions)</h3>
+            <pre><code># Example: User loves Betway Mega Accas
+personalization_boost = 0
+
+# Exact bet type match
+if tile.bet_type == user.preferred_bet_type:
+    personalization_boost += 0.25  # HUGE boost
+
+# Exact bookmaker match (but not NCOs)
+if tile.bookmaker == user.preferred_bookmaker:
+    if tile.tile_type != "NCO":
+        personalization_boost += 0.20
+        
+# Both match = JACKPOT
+if both_match:
+    personalization_boost += 0.10  # Bonus!
+
+# Demote NCOs from signed-up bookmakers
+if tile.tile_type == "NCO" and tile.bookmaker in user.signed_up:
+    personalization_boost -= 0.50  # Massive penalty</code></pre>
+
+            <h3>Bookmaker Signup Tracking</h3>
+            <div class="highlight">
+                <p><strong>Key Innovation:</strong> Track which bookmakers users have already signed up with.</p>
+                <p><strong>How it works:</strong></p>
+                <ol>
+                    <li>Track when users click NCO tiles</li>
+                    <li>Store list of bookmakers per user</li>
+                    <li>Heavily demote NCOs from those bookmakers (-50% score)</li>
+                    <li>Promote NCOs from new bookmakers</li>
+                </ol>
+                <p><strong>Impact:</strong> Prevents wasting premium positions on unusable signup offers.</p>
+            </div>
+        </div>
+
+        <div class="section" id="api">
+            <h2>🔌 API Integration</h2>
+
+            <h3>Checkd Production API</h3>
+            <pre><code>GET https://odds-api.checkd-dev.com/prod/smartacca/discover?app=bethub
+
+Response:
+{
+  "code": 0,
+  "message": "Discover Widgets returned successful",
+  "data": [
+    {
+      "id": "eo929saml5j6i4h",
+      "type": "image",
+      "order": 3,  // CMS priority - IGNORE THIS
+      "keywords": [
+        {"name": "bookmaker", "value": "Dabble"},
+        {"name": "bet_type", "value": "Acca"},
+        {"name": "odds_ranges", "value": "75/1 - 99/1"}
+      ],
+      "bgImgURL": "https://...",
+      "description": "Dabble Acca - 03 Feb"
+    }
+    // ... more tiles
+  ]
+}</code></pre>
+
+            <div class="highlight">
+                <strong>IMPORTANT:</strong> Use array index as <code>tile_position</code>, NOT the "order" field!
+                <br>The "order" field is CMS internal priority, not display position.
+            </div>
+
+            <h3>ML Ranking API</h3>
+            <pre><code>POST http://localhost:5000/api/rank-tiles
+
+Request:
+{
+  "tiles": [...],  // Array from Checkd API
+  "model": "lightgbm",  // or xgboost, random_forest, ridge
+  "user_type": "power_user"  // or new_user, casual_user
+}
+
+Response:
+{
+  "success": true,
+  "ranked_tiles": [
+    {
+      "tile": {...},
+      "score": 0.8245,
+      "original_position": 12,
+      "recommended_position": 3,
+      "change": 9  // moved up 9 positions
+    }
+  ],
+  "model": {...},
+  "user_profile": {...}
+}</code></pre>
+
+            <h3>Integration Code Example</h3>
+            <pre><code>// Fetch tiles from Checkd
+const tiles = await fetch(checkdAPI).then(r => r.json());
+
+// Add display positions
+tiles.data.forEach((tile, idx) => {
+  tile.position = idx + 1;  // Use array index!
+});
+
+// Rank with ML
+const ranked = await fetch('/api/rank-tiles', {
+  method: 'POST',
+  body: JSON.stringify({
+    tiles: tiles.data,
+    model: 'lightgbm',
+    user_type: getUserType(userId)
+  })
+});
+
+// Display ranked tiles
+displayTiles(ranked.ranked_tiles);</code></pre>
+        </div>
+
+        <div class="section" id="data-pipeline">
+            <h2>📊 Data Pipeline</h2>
+
+            <h3>Current Setup</h3>
+            <ol>
+                <li><strong>BigQuery:</strong> 322,688 tile clicks, 12 months</li>
+                <li><strong>Feature Engineering:</strong> Python notebook creates 47 features</li>
+                <li><strong>Model Training:</strong> LightGBM trained on 80% of data</li>
+                <li><strong>Model Export:</strong> Saved as .pkl files</li>
+                <li><strong>Demo:</strong> Loads models and scores live API data</li>
+            </ol>
+
+            <h3>Production Pipeline (Phase 2)</h3>
+            <div class="info">
+                <ol>
+                    <li><strong>Impression Tracking:</strong> <code>discover_tile_impression</code> event fires</li>
+                    <li><strong>Firebase → BigQuery:</strong> Events flow automatically</li>
+                    <li><strong>Daily ETL:</strong> Calculate user profiles (preferences, signups)</li>
+                    <li><strong>Weekly Retraining:</strong> Model updates with new data</li>
+                    <li><strong>A/B Testing:</strong> Compare ML vs current ranking</li>
+                    <li><strong>Validation:</strong> Measure actual CTR improvement</li>
+                </ol>
+            </div>
+
+            <h3>User Profile Query (BigQuery)</h3>
+            <pre><code>CREATE OR REPLACE TABLE user_profiles AS
+WITH clicks AS (
+  SELECT 
+    user_id,
+    bookmaker,
+    bet_type,
+    tile_type,
+    COUNT(*) as clicks
+  FROM tile_clicks
+  WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAYS)
+  GROUP BY user_id, bookmaker, bet_type, tile_type
+)
+SELECT
+  user_id,
+  ARRAY_AGG(bookmaker ORDER BY clicks DESC LIMIT 1)[OFFSET(0)] as preferred_bookmaker,
+  ARRAY_AGG(bet_type ORDER BY clicks DESC LIMIT 1)[OFFSET(0)] as preferred_bet_type,
+  ARRAY_AGG(DISTINCT bookmaker IGNORE NULLS) 
+    FILTER(WHERE tile_type = 'NCO') as signed_up_bookmakers,
+  SUM(clicks) as total_clicks
+FROM clicks
+GROUP BY user_id;</code></pre>
+        </div>
+
+        <div class="section" id="deployment">
+            <h2>🚀 Deployment Guide</h2>
+
+            <h3>Phase 1: Integration (Week 1-2)</h3>
+            <div class="success">
+                <h4>Requirements:</h4>
+                <ul>
+                    <li>Checkd API access credentials</li>
+                    <li>Server with Python 3.8+</li>
+                    <li>2GB RAM minimum</li>
+                    <li>Impression tracking implemented</li>
+                </ul>
+
+                <h4>Steps:</h4>
+                <ol>
+                    <li>Deploy Flask API to production server</li>
+                    <li>Configure Checkd API credentials</li>
+                    <li>Test endpoint with sample data</li>
+                    <li>Monitor response times (should be &lt;50ms)</li>
+                    <li>Enable impression tracking in app</li>
+                </ol>
+            </div>
+
+            <h3>Phase 2: A/B Testing (Week 3-6)</h3>
+            <pre><code>// Pseudocode for A/B test
+function getTiles(userId) {
+  const tiles = fetchFromCheckd();
+  
+  if (isInMLGroup(userId)) {
+    // 50% of users - ML ranking
+    return rankWithML(tiles, userId);
+  } else {
+    // 50% of users - current ranking
+    return tiles;
+  }
+}</code></pre>
+
+            <h3>Monitoring & Metrics</h3>
+            <table>
+                <tr>
+                    <th>Metric</th>
+                    <th>Target</th>
+                    <th>Alert If</th>
+                </tr>
+                <tr>
+                    <td>API Response Time</td>
+                    <td>&lt; 50ms</td>
+                    <td>&gt; 100ms</td>
+                </tr>
+                <tr>
+                    <td>CTR (Control)</td>
+                    <td>Baseline</td>
+                    <td>Drops &gt;5%</td>
+                </tr>
+                <tr>
+                    <td>CTR (ML Group)</td>
+                    <td>+25-35%</td>
+                    <td>&lt; +10%</td>
+                </tr>
+                <tr>
+                    <td>Error Rate</td>
+                    <td>&lt; 0.1%</td>
+                    <td>&gt; 1%</td>
+                </tr>
+            </table>
+
+            <h3>Troubleshooting</h3>
+            <div class="highlight">
+                <h4>Common Issues:</h4>
+                <ul>
+                    <li><strong>Slow Response:</strong> Check model loading (should load once at startup)</li>
+                    <li><strong>Wrong Positions:</strong> Verify using array index, not "order" field</li>
+                    <li><strong>CTR Not Improving:</strong> Check impression tracking is working</li>
+                    <li><strong>Model Errors:</strong> Verify all 47 features present</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📞 Support & Contact</h2>
+            <p>For technical questions or support:</p>
+            <ul>
+                <li><strong>Demo Issues:</strong> Check server is running on port 5000</li>
+                <li><strong>API Questions:</strong> Review this guide's API Integration section</li>
+                <li><strong>Model Questions:</strong> See ML Models Explained section</li>
+                <li><strong>Data Questions:</strong> Review Feature Engineering section</li>
+            </ul>
+            
+            <div class="info">
+                <p><strong>Quick Links:</strong></p>
+                <ul>
+                    <li><a href="/">Live Demo</a> - Test the system</li>
+                    <li><a href="/executive-summary">Executive Summary</a> - Business case</li>
+                    <li>Training Data: <code>/data/tile_clicks_features_12months.csv</code></li>
+                    <li>Models: <code>/models/*.pkl</code></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-note" style="text-align: center; padding: 2rem 0; color: #999;">
+            <p>Last Updated: February 2026</p>
+            <p>Version: 1.0 (Production Ready)</p>
+        </div>
+    </div>
+</body>
+</html>

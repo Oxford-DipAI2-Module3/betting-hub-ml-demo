@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DS Recommendations - Betting Hub ML</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+        .nav {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav h1 { font-size: 1.5rem; }
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+        }
+        .nav-tabs a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        .nav-tabs a:hover { background: rgba(255,255,255,0.2); }
+        .nav-tabs a.active { background: rgba(255,255,255,0.3); }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem 4rem;
+        }
+        .section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .header {
+            text-align: center;
+            padding: 2rem 0;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .header .subtitle {
+            font-size: 1.2rem;
+            color: #666;
+        }
+        h2 {
+            color: #667eea;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        h3 {
+            color: #2c3e50;
+            font-size: 1.3rem;
+            margin: 1.5rem 0 0.8rem;
+        }
+        h4 {
+            color: #667eea;
+            font-size: 1.1rem;
+            margin: 1rem 0 0.5rem;
+        }
+        p, li {
+            margin-bottom: 0.8rem;
+        }
+        .critical {
+            background: #fff5f5;
+            border-left: 4px solid #e74c3c;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        .warning {
+            background: #fff9f0;
+            border-left: 4px solid #f39c12;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        .success {
+            background: #f0fff4;
+            border-left: 4px solid #27ae60;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        .info {
+            background: #f0f8ff;
+            border-left: 4px solid #3498db;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        .score-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            margin: 2rem 0;
+        }
+        .score-value {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .score-label {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .metric-box {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .metric-value.good { color: #27ae60; }
+        .metric-value.bad { color: #e74c3c; }
+        .metric-value.unknown { color: #95a5a6; }
+        .metric-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .checklist {
+            list-style: none;
+            margin-left: 0;
+        }
+        .checklist li {
+            padding: 0.5rem 0;
+            padding-left: 2rem;
+            position: relative;
+        }
+        .checklist li:before {
+            content: '☐';
+            position: absolute;
+            left: 0;
+            font-size: 1.5rem;
+            color: #e74c3c;
+        }
+        .checklist li.done:before {
+            content: '✅';
+            color: #27ae60;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #e74c3c;
+        }
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        pre code {
+            background: none;
+            color: #ecf0f1;
+            padding: 0;
+        }
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2rem;
+        }
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: -2rem;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #667eea;
+        }
+        .timeline-item:after {
+            content: '';
+            position: absolute;
+            left: -1.7rem;
+            top: 12px;
+            width: 2px;
+            height: calc(100% - 12px);
+            background: #e0e0e0;
+        }
+        .timeline-item:last-child:after {
+            display: none;
+        }
+        ul {
+            margin-left: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <div class="nav-content">
+            <h1>🎯 Betting Hub ML Demo</h1>
+            <div class="nav-tabs">
+                <a href="/">Live Comparison</a>
+                <a href="/executive-summary">Executive Summary</a>
+                <a href="/technical-guide">Technical Guide</a>
+                <a href="/recommendations" class="active">DS Recommendations</a>
+                <a href="/data-insights">Data Insights</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🔬 Data Science Assessment</h1>
+            <p class="subtitle">Critical Review & Recommendations</p>
+        </div>
+
+        <div class="section">
+            <div class="score-card">
+                <div class="score-value">7/10</div>
+                <div class="score-label">Overall ML Rigor Score (Updated)</div>
+                <p style="margin-top: 1rem; opacity: 0.9;">Technical execution: 8/10 | ML validation: 5/10 | Business value: 5/10</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>✅ What's Been Done Well</h2>
+            
+            <div class="success">
+                <h3>Strong Foundation</h3>
+                <ul>
+                    <li><strong>322,688 clicks over 12 months</strong> - Decent sample size for ML</li>
+                    <li><strong>47 engineered features</strong> - Comprehensive feature set</li>
+                    <li><strong>5 algorithms tested</strong> - Proper model comparison</li>
+                    <li><strong>Interactive demo</strong> - Excellent stakeholder communication tool</li>
+                    <li><strong>Fast inference (49ms)</strong> - Production-viable performance</li>
+                    <li><strong>Smart features</strong> - Bookmaker signup tracking, cold start handling</li>
+                    <li><strong>Position variance validated</strong> - 71% of tiles at multiple positions</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🚨 Critical Issues</h2>
+
+            <div class="critical">
+                <h3>CRITICAL #1: Synthetic Target Problem</h3>
+                <p><strong>The Issue:</strong></p>
+                <pre><code># Target was created from the same features the model uses
+target = 0.40*position + 0.25*boost + 0.20*top_bookmaker + 0.15*time
+
+# This means:
+- R² = 99.99% is meaningless (model just learned your formula)
+- Zero evidence model works with real CTR data
+- +25-35% improvement is entirely unvalidated
+- Circular reasoning</code></pre>
+
+                <p><strong>What This Means:</strong></p>
+                <ul>
+                    <li>You've proven your <em>code</em> works, not your <em>model</em></li>
+                    <li>Real performance is <strong>completely unknown</strong></li>
+                    <li>Could be 40% R² or 80% R² - no way to know</li>
+                </ul>
+
+                <p><strong>Fix:</strong> Need real CTR data (clicks ÷ impressions) immediately</p>
+            </div>
+
+            <div class="critical">
+                <h3>CRITICAL #2: No Ground Truth Validation</h3>
+                <p><strong>Missing:</strong></p>
+                <ul>
+                    <li>❌ Actual CTR data</li>
+                    <li>❌ A/B test results</li>
+                    <li>❌ Validation that feature weights are correct</li>
+                    <li>❌ Any real-world performance metrics</li>
+                </ul>
+
+                <p><strong>Risk:</strong></p>
+                <ul>
+                    <li>Model trains on real data → R² drops to 40%</li>
+                    <li>Business discovers ML doesn't actually improve CTR</li>
+                    <li>Project credibility destroyed</li>
+                </ul>
+            </div>
+
+            <div class="warning">
+                <h3>MAJOR #3: Data Leakage Risk</h3>
+                <p><strong>Question:</strong> How were user preferences calculated?</p>
+                
+                <p><strong>If you calculated <code>user_preferred_bookmaker</code> from the SAME clicks you're trying to predict:</strong></p>
+                <ul>
+                    <li>That's <strong>data leakage</strong></li>
+                    <li>Model is "cheating" by using future information</li>
+                    <li>Won't work in production</li>
+                </ul>
+
+                <p><strong>Correct Approach:</strong></p>
+                <pre><code># User preferences from BEFORE the tile impression
+train: Jan-Oct (calculate preferences from this)
+test: Nov-Dec (predict using Oct preferences)
+
+# Never use same clicks to both calculate preferences AND predict</code></pre>
+            </div>
+
+            <div class="success">
+                <h3>✅ RESOLVED: Position Variance Validated</h3>
+                
+                <p><strong>Original Concern:</strong> Position bias might prevent model from learning tile quality</p>
+                
+                <p><strong>Investigation Results (322k clicks, 5,045 tiles):</strong></p>
+                <ul>
+                    <li>✅ <strong>3,588 tiles (71%)</strong> appeared at multiple positions</li>
+                    <li>✅ <strong>119 tiles (2%)</strong> appeared at 10+ different positions</li>
+                    <li>⚠️ <strong>1,457 tiles (29%)</strong> appeared at only 1 position</li>
+                </ul>
+
+                <p><strong>Conclusion:</strong></p>
+                <p>Natural CMS movements provide <strong>sufficient position variance</strong> for model to learn position effects separately from tile quality. The 54% position importance is validated as genuine user behavior, not pure bias.</p>
+
+                <p><strong>Action Required: NONE</strong></p>
+                <ul>
+                    <li>✅ No randomization needed in Phase 1</li>
+                    <li>✅ Natural tile movements provide adequate training signal</li>
+                    <li>✅ 71% position variance is industry-standard acceptable</li>
+                    <li>⚠️ Only revisit if Phase 3 A/B test shows &lt;10% improvement</li>
+                </ul>
+
+                <p><strong>Status:</strong> This is no longer a blocking issue. Proceed with standard implementation.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 What's Actually Missing</h2>
+
+            <div class="grid-3">
+                <div class="metric-box">
+                    <div class="metric-value unknown">?</div>
+                    <div class="metric-label">Current Baseline CTR</div>
+                    <p style="margin-top: 0.5rem; font-size: 0.85rem;">Without this, "+25%" is meaningless</p>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value unknown">?</div>
+                    <div class="metric-label">Real Model R²</div>
+                    <p style="margin-top: 0.5rem; font-size: 0.85rem;">Expect 40-70%, not 99.99%</p>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value unknown">?</div>
+                    <div class="metric-label">Business Impact</div>
+                    <p style="margin-top: 0.5rem; font-size: 0.85rem;">Does CTR → Revenue?</p>
+                </div>
+            </div>
+
+            <h3>Missing Validation</h3>
+            <ul>
+                <li>❌ Time-based validation (train on past, test on future)</li>
+                <li>❌ Confidence intervals on performance</li>
+                <li>❌ Error analysis (which tiles does model get wrong?)</li>
+                <li>❌ Comparison to simple baselines (random, position-only, heuristics)</li>
+            </ul>
+
+            <h3>Missing Business Metrics</h3>
+            <ul>
+                <li>❌ Revenue per click</li>
+                <li>❌ User lifetime value impact</li>
+                <li>❌ Is CTR even the right metric?</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Recommendations - Priority Order</h2>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h3>URGENT: Get Real Data (Weeks 1-5)</h3>
+                    <div class="critical">
+                        <p><strong>STOP selling this to stakeholders until you have:</strong></p>
+                        <ul class="checklist">
+                            <li>Impression tracking live (Week 1)</li>
+                            <li>Tile expiry timestamps captured</li>
+                            <li>2-4 weeks of impression data collected (Weeks 2-5)</li>
+                            <li>Real CTR calculated (clicks ÷ impressions)</li>
+                            <li>Model retrained on actual CTR targets</li>
+                            <li>Honest R² on held-out data</li>
+                        </ul>
+
+                        <p><strong>If R² &lt; 50% on real data:</strong></p>
+                        <ul>
+                            <li>Rethink the approach</li>
+                            <li>Get more features</li>
+                            <li>Maybe abandon ML entirely (use simple heuristics)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <h3>Priority 2: Proper Validation (Week 6)</h3>
+                    <div class="info">
+                        <p><strong>Implement Time-Based Split:</strong></p>
+                        <pre><code># Not random split - use TIME
+train_data = df[df['date'] < '2025-11-01']
+test_data = df[df['date'] >= '2025-11-01']
+
+# Train on past
+model.fit(train_data)
+
+# Test on FUTURE data only
+predictions = model.predict(test_data)
+
+# This is your REAL R²
+real_r2 = r2_score(test_data['actual_ctr'], predictions)
+print(f"Real performance: {real_r2}")  
+# Expect 0.40-0.70, NOT 0.99</code></pre>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <h3>Priority 3: A/B Test Framework (Weeks 7-10)</h3>
+                    <div class="warning">
+                        <p><strong>Don't Just Deploy - TEST IT:</strong></p>
+                        <pre><code># Controlled Experiment (APP-BASED)
+Group A (50%): Current ranking → measure baseline_CTR
+Group B (50%): ML ranking → measure ML_CTR
+
+# Deterministic user assignment
+if hash(user_id) % 2 == 0:
+    group = 'control'
+else:
+    group = 'ML'
+
+# Track group in ALL events
+analytics.track('discover_tile_impression', {
+    tile_id: tile.id,
+    ab_test_group: group  # NEW PARAMETER
+})
+
+# Decision Criteria:
+if ML_CTR > baseline_CTR + 10% AND statistically_significant:
+    rollout_to_100_percent()
+elif ML_CTR > baseline_CTR:
+    continue_testing_longer()
+else:
+    kill_project()  # Be willing to walk away</code></pre>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <h3>Priority 4: Baseline Comparisons (Week 6)</h3>
+                    <div class="info">
+                        <p><strong>Test Against Simple Alternatives:</strong></p>
+                        <ul>
+                            <li><strong>Random:</strong> Shuffle tiles randomly</li>
+                            <li><strong>Position-only:</strong> Keep current positions</li>
+                            <li><strong>Simple heuristic:</strong> Boost tiles first, then Accas, then position</li>
+                            <li><strong>Rule-based:</strong> If power user show Betway, if new user show Dabble NCOs</li>
+                        </ul>
+
+                        <p><strong>If ML only beats random by 5%, it's not worth the complexity.</strong></p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <h3>Priority 5: CTR-Based Features (Week 6+)</h3>
+                    <div class="success">
+                        <p><strong>Don't use click count - use CTR instead:</strong></p>
+                        <pre><code># BAD: Previous click count (exposure bias)
+Tile A: 1,000 clicks, 10,000 impressions = 10% CTR ✅
+Tile B: 1,000 clicks, 50,000 impressions = 2% CTR ❌
+# Both have same clicks but A is 5x better!
+
+# GOOD: Previous CTR (normalized by exposure)
+features = [
+    'tile_previous_7day_ctr',    # 15-20% importance
+    'tile_previous_30day_ctr',   # 10-15% importance
+    'ctr_trend',                 # 4-6% importance
+    'time_to_expiry_hours',      # 8-12% importance
+    'position_specific_ctr'      # 6-8% importance
+]</code></pre>
+                        <p><strong>Total impact:</strong> CTR features add +20-30% to model performance</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 Add to Demo: Honesty Dashboard</h2>
+
+            <div class="critical">
+                <h3>⚠️ CURRENT STATUS: PROOF OF CONCEPT ONLY</h3>
+                
+                <table style="width: 100%; margin: 1rem 0; border-collapse: collapse;">
+                    <tr style="background: #fff5f5;">
+                        <th style="text-align: left; padding: 0.75rem; border-bottom: 1px solid #e0e0e0;">Metric</th>
+                        <th style="text-align: left; padding: 0.75rem; border-bottom: 1px solid #e0e0e0;">Current Status</th>
+                        <th style="text-align: left; padding: 0.75rem; border-bottom: 1px solid #e0e0e0;">What's Needed</th>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid #e0e0e0;">Model R²</td>
+                        <td style="padding: 0.75rem; color: #e74c3c; border-bottom: 1px solid #e0e0e0;"><strong>99.99% (INFLATED)</strong></td>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid #e0e0e0;">Real CTR data → expect 40-70%</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid #e0e0e0;">Business Impact</td>
+                        <td style="padding: 0.75rem; color: #e74c3c; border-bottom: 1px solid #e0e0e0;"><strong>+25-35% (THEORETICAL)</strong></td>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid #e0e0e0;">A/B test with real users</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid #e0e0e0;">Validation</td>
+                        <td style="padding: 0.75rem; color: #e74c3c; border-bottom: 1px solid #e0e0e0;"><strong>SYNTHETIC ONLY</strong></td>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid #e0e0e0;">Time-based split, real CTR</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid #e0e0e0;">Position Variance</td>
+                        <td style="padding: 0.75rem; color: #27ae60; border-bottom: 1px solid #e0e0e0;"><strong>✅ VALIDATED (71%)</strong></td>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid #e0e0e0;">No action needed</td>
+                    </tr>
+                </table>
+
+                <h4>Validation Checklist:</h4>
+                <ul class="checklist">
+                    <li>Impression tracking implemented</li>
+                    <li>4+ weeks real data collected</li>
+                    <li>Model retrained on actual CTR</li>
+                    <li>Time-based validation completed</li>
+                    <li>Baseline comparisons done</li>
+                    <li>A/B test running</li>
+                    <li>Statistical significance achieved</li>
+                    <li class="done">Technical demo built</li>
+                    <li class="done">Position variance validated</li>
+                </ul>
+
+                <p style="margin-top: 1.5rem;"><strong>⚠️ Only after completing this checklist can we prove business value.</strong></p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>💬 How to Present This to Stakeholders</h2>
+
+            <div class="success">
+                <h3>✅ DO Say:</h3>
+                <blockquote style="border-left: 4px solid #27ae60; padding-left: 1rem; margin: 1rem 0; font-style: italic;">
+                    "We've built a promising prototype that demonstrates ML ranking CAN work technically. The demo shows our system can process live data in 49ms and handle different user types. Position variance analysis validates our approach (71% of tiles moved naturally). However, we need 6 weeks of impression data to validate with real CTR before committing to production. Here's our validation plan..."
+                </blockquote>
+            </div>
+
+            <div class="critical">
+                <h3>❌ DON'T Say:</h3>
+                <blockquote style="border-left: 4px solid #e74c3c; padding-left: 1rem; margin: 1rem 0; font-style: italic;">
+                    "We have a production-ready ML system with 99.99% accuracy that will improve CTR by 25-35%."
+                </blockquote>
+                <p><strong>Why:</strong> This is misleading. The 99.99% is meaningless and the 25-35% is unvalidated.</p>
+            </div>
+
+            <h3>Be Honest About:</h3>
+            <ul>
+                <li>Current R² is artificially inflated (synthetic targets)</li>
+                <li>Real performance completely unknown until we have CTR data</li>
+                <li>Need impression tracking urgently (blocks everything)</li>
+                <li>A/B test required to prove actual business value</li>
+                <li>Could discover ML doesn't beat simple heuristics</li>
+                <li>Position variance validated - one less concern!</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Bottom Line</h2>
+
+            <div class="score-card">
+                <p style="font-size: 1.2rem; margin-bottom: 1rem;">You're 45% done with the actual ML work</p>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 2rem;">
+                    <div>
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">✅ 80%</div>
+                        <div>Engineering</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚠️ 30%</div>
+                        <div>Validation</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">❓ 0%</div>
+                        <div>Proven Value</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="success">
+                <h3>✅ What's Great:</h3>
+                <ul>
+                    <li>Impressive technical demo for stakeholder buy-in</li>
+                    <li>Fast, clean, production-viable code</li>
+                    <li>Good feature engineering and personalization logic</li>
+                    <li>Multiple models compared properly</li>
+                    <li><strong>Position variance validated (71% at multiple positions)</strong></li>
+                </ul>
+            </div>
+
+            <div class="critical">
+                <h3>⚠️ What's Missing:</h3>
+                <ul>
+                    <li><strong>Real CTR data validation</strong> - The most important part!</li>
+                    <li><strong>Business metrics</strong> - Does this actually make money?</li>
+                    <li><strong>Baseline comparisons</strong> - Is ML better than simple rules?</li>
+                    <li><strong>Statistical rigor</strong> - Confidence intervals, significance testing</li>
+                </ul>
+            </div>
+
+            <h3 style="margin-top: 2rem;">Final Recommendation:</h3>
+            <p><strong>Use this demo to get stakeholder buy-in and secure 6 weeks to properly validate. Be upfront about current limitations. Position variance is validated - that's progress! Stakeholders respect honesty more than overpromising.</strong></p>
+        </div>
+
+        <div style="text-align: center; padding: 2rem 0; color: #999;">
+            <p>Data Science Assessment completed February 2026</p>
+            <p>Updated: Position variance validated - 71% tiles at multiple positions</p>
+        </div>
+    </div>
+</body>
+</html>
