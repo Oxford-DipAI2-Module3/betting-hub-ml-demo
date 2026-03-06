@@ -104,21 +104,24 @@ def index():
 def fetch_tiles():
     """Fetch live tiles from Checkd API"""
     try:
-        response = requests.get('https://api-prod.checkd.media/discover/feed', timeout=5)
+        response = requests.get('https://odds-api.checkd-dev.com/prod/smartacca/discover?app=bethub', timeout=10)
         
         if response.status_code == 200:
             data = response.json()
-            tiles = data.get('tiles', [])
+            tiles = data.get('data', [])
             
-            # Add original position
-            for i, tile in enumerate(tiles):
-                tile['position'] = i + 1
-                tile['original_position'] = i + 1
+            # Process tiles to match expected format
+            betting_tiles = []
+            for idx, tile in enumerate(tiles):
+                if 'keywords' in tile and tile['keywords']:
+                    tile['position'] = idx + 1
+                    tile['original_position'] = idx + 1
+                    betting_tiles.append(tile)
             
             return jsonify({
                 'success': True,
-                'tiles': tiles,
-                'count': len(tiles)
+                'tiles': betting_tiles,
+                'count': len(betting_tiles)
             })
         else:
             return jsonify({
