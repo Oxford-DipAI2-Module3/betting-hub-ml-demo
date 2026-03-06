@@ -640,16 +640,16 @@
                     <div class="info-section">
                         <h4>Performance Metrics</h4>
                         <div class="info-metric">
-                            <span>AUC-ROC:</span>
-<strong>${model.auc_roc ? model.auc_roc.toFixed(4) : 'N/A'}</strong>
+                            <span>R² Score:</span>
+                            <strong>${(model.r2 * 100).toFixed(2)}%</strong>
                         </div>
                         <div class="info-metric">
-                            <span>Actual CTR:</span>
-<strong>${model.actual_ctr || 'N/A'}</strong>
+                            <span>RMSE:</span>
+                            <strong>${model.rmse}</strong>
                         </div>
                         <div class="info-metric">
-                            <span>Predicted CTR:</span>
-<strong>${model.predicted_ctr || 'N/A'}</strong>
+                            <span>MAE:</span>
+                            <strong>${model.mae}</strong>
                         </div>
                         <div class="info-metric">
                             <span>Training Time:</span>
