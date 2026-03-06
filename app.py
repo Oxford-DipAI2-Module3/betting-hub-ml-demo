@@ -22,96 +22,85 @@ except Exception as e:
     calibrator = None
     feature_names = []
 
-# Real model performance from training
-REAL_MODEL_PERFORMANCE = {
-    'name': 'LightGBM (Production)',
-    'status': 'Trained on Real Data',
-    'auc_roc': 0.9298,
-    'actual_ctr': 0.0175,
-    'predicted_ctr': 0.0205,
-    'training_samples': 240236,
-    'test_samples': 60060,
-    'training_period': 'Feb 27 - Mar 6, 2026 (7 days)',
-    'total_clicks': 5842,
-    'features': 43,
-    'top_features': [
-        {'name': 'user_total_sessions', 'importance': 2428},
-        {'name': 'tile_ctr_lagged', 'importance': 2351},
-        {'name': 'hour_of_day', 'importance': 1727},
-        {'name': 'user_sessions_with_clicks', 'importance': 1485},
-        {'name': 'tile_position', 'importance': 1385},
-    ],
-    'key_insights': [
-        'Timestamp-based lagging enables intra-day learning',
-        '97.3% of impressions have 50+ prior data points',
-        'Boost tiles (42.81% CTR) vs Regular (1.01% CTR)',
-        'Model adapts within same day (0% → 92% CTR by impression 50)',
-        'is_boost feature handles cold-start (rank #13)'
-    ],
-    'pros': [
-        'Trained on 300K real impressions with actual user clicks',
-        'AUC-ROC 0.93 (excellent discrimination)',
-        'Well calibrated (2.05% predicted vs 1.75% actual)',
-        'Handles cold-start tiles via is_boost signal',
-        'Adapts intra-day as tiles get impressions'
-    ],
-    'cons': [
-        'Only 7 days of training data (30+ days recommended)',
-        'Predictions slightly optimistic (+0.3% CTR)',
-        'Needs real-time CTR infrastructure for production',
-        'Model should be retrained weekly'
-    ],
-    'next_steps': [
-        'Collect 30 days of data (by April 6)',
-        'Build real-time CTR tracking system',
-        'Deploy A/B test (5% of users)',
-        'Monitor predicted vs actual CTR daily'
-    ]
+# Model configuration matching old demo structure
+MODELS = {
+    'lightgbm': {
+        'name': 'LightGBM',
+        'status': 'Trained on Real Data',
+        'r2': None,  # Not applicable for classification
+        'auc_roc': 0.9298,
+        'rmse': None,
+        'mae': None,
+        'training_time': '~2 min',
+        'inference_speed': '~50ms',
+        'rank': '🏆 Production Model',
+        'pros': [
+            'Trained on 300K real impressions with actual user clicks',
+            'AUC-ROC 0.93 (excellent discrimination)',
+            'Well calibrated (2.05% predicted vs 1.75% actual CTR)',
+            'Handles cold-start tiles via is_boost signal',
+            'Adapts intra-day as tiles get impressions',
+            'Timestamp-based lagging enables same-day learning'
+        ],
+        'cons': [
+            'Only 7 days of training data (30+ days recommended)',
+            'Predictions slightly optimistic (+0.3% CTR)',
+            'Needs real-time CTR infrastructure for production',
+            'Model should be retrained weekly'
+        ],
+        'best_for': 'Production deployment with real user data',
+        'technical': 'LightGBM classifier with timestamp-based feature lagging, isotonic calibration, 43 features including user behavior and real-time tile CTR.',
+        'personalization': 'Strong - user_total_sessions (#1), user_sessions_with_clicks (#4), user_type (#10)',
+        'training_samples': '240,236 impressions',
+        'test_samples': '60,060 impressions',
+        'actual_ctr': '1.75%',
+        'predicted_ctr': '2.05%',
+        'total_clicks': '5,842',
+        'training_period': 'Feb 27 - Mar 6, 2026',
+        'features': 43,
+        'top_features': [
+            'user_total_sessions (2428)',
+            'tile_ctr_lagged (2351)',
+            'hour_of_day (1727)',
+            'user_sessions_with_clicks (1485)',
+            'tile_position (1385)'
+        ]
+    }
+}
+
+USER_PROFILES = {
+    'new': {
+        'name': 'New User',
+        'strategy': 'First visit - show NCOs and popular bets',
+        'sessions': 0,
+        'preferred_bet_type': 'Single',
+        'preferred_bookmaker': 'Sky Bet'
+    },
+    'casual': {
+        'name': 'Casual Bettor',
+        'strategy': 'Occasional bettor - balanced mix',
+        'sessions': 5,
+        'preferred_bet_type': 'Acca',
+        'preferred_bookmaker': 'Sky Bet'
+    },
+    'power': {
+        'name': 'Power User',
+        'strategy': 'Frequent bettor - boost tiles and accas',
+        'sessions': 50,
+        'preferred_bet_type': 'Mega Acca',
+        'preferred_bookmaker': 'Sky Bet'
+    }
 }
 
 @app.route('/')
 def index():
-    """Landing page with model overview"""
-    # Format data to match old template structure
-    models_dict = {
-        'lightgbm': REAL_MODEL_PERFORMANCE
-    }
-    
-    user_profiles_dict = {
-        'new': {
-            'name': 'New User',
-            'strategy': 'First visit - show NCOs and popular bets',
-            'sessions': 0,
-            'preferred_bet_type': 'Single',
-            'preferred_bookmaker': 'Sky Bet'
-        },
-        'casual': {
-            'name': 'Casual Bettor',
-            'strategy': 'Occasional bettor - balanced mix',
-            'sessions': 5,
-            'preferred_bet_type': 'Acca',
-            'preferred_bookmaker': 'Sky Bet'
-        },
-        'power': {
-            'name': 'Power User',
-            'strategy': 'Frequent bettor - boost tiles and accas',
-            'sessions': 50,
-            'preferred_bet_type': 'Mega Acca',
-            'preferred_bookmaker': 'Sky Bet'
-        }
-    }
-    
+    """Landing page with live demo"""
     return render_template('index.html',
-                         models=models_dict,
-                         user_profiles=user_profiles_dict,
+                         models=MODELS,
+                         user_profiles=USER_PROFILES,
                          model_loaded=MODEL_LOADED)
 
-@app.route('/live-demo')
-def live_demo():
-    """Interactive demo with real Checkd tiles"""
-    return render_template('live_demo.html')
-
-@app.route('/api/fetch-tiles', methods=['POST'])
+@app.route('/api/fetch-tiles', methods=['GET', 'POST'])
 def fetch_tiles():
     """Fetch live tiles from Checkd API"""
     try:
@@ -123,6 +112,7 @@ def fetch_tiles():
             
             # Add original position
             for i, tile in enumerate(tiles):
+                tile['position'] = i + 1
                 tile['original_position'] = i + 1
             
             return jsonify({
@@ -142,104 +132,130 @@ def fetch_tiles():
             'error': str(e)
         }), 500
 
-@app.route('/api/rank-tiles', methods=['POST'])
+@app.route('/api/rank-tiles', methods=['GET', 'POST'])
 def rank_tiles():
     """Rank tiles using the REAL trained model"""
     try:
         data = request.json
         tiles = data.get('tiles', [])
-        user_type = data.get('userType', 'casual')
+        model_name = data.get('model', 'lightgbm')
+        user_type = data.get('user_type', 'casual')
+        
+        # Get user profile
+        user_profile = USER_PROFILES.get(user_type, USER_PROFILES['casual'])
         
         if not MODEL_LOADED:
             # Fallback: simple boost-based ranking
+            scored_tiles = []
             for tile in tiles:
-                keywords = tile.get('keywords', {})
-                bet_type = keywords.get('bet_type', '')
+                # Extract keywords as dict
+                kw = {}
+                if 'keywords' in tile:
+                    for k in tile['keywords']:
+                        kw[k['name']] = k['value']
+                
+                bet_type = kw.get('bet_type', '')
                 
                 # Simple heuristic scoring
                 if 'boost' in bet_type.lower():
-                    tile['ml_score'] = 0.45
+                    score = 0.45
                 elif tile.get('tile_type') == 'New Customer Offer':
-                    tile['ml_score'] = 0.08
+                    score = 0.08
                 else:
-                    tile['ml_score'] = 0.02
+                    score = 0.02
+                
+                scored_tiles.append({
+                    'tile': tile,
+                    'score': score,
+                    'original_position': tile.get('original_position', tile.get('position', 0))
+                })
             
             # Sort by score
-            tiles.sort(key=lambda x: x.get('ml_score', 0), reverse=True)
+            scored_tiles.sort(key=lambda x: x['score'], reverse=True)
+            
+            # Add recommended position and change
+            for i, item in enumerate(scored_tiles):
+                item['recommended_position'] = i + 1
+                item['change'] = item['original_position'] - item['recommended_position']
             
             return jsonify({
                 'success': True,
-                'tiles': tiles,
-                'model_used': 'fallback_heuristic',
-                'note': 'Real model not loaded, using simple heuristic'
+                'tiles': scored_tiles,
+                'model': MODELS['lightgbm'],
+                'user_profile': user_profile,
+                'note': 'Model not loaded, using heuristic'
             })
         
         # Use REAL model for scoring
-        tile_features = []
+        scored_tiles = []
         
         for tile in tiles:
-            keywords = tile.get('keywords', {})
+            # Extract keywords as dict
+            kw = {}
+            if 'keywords' in tile:
+                for k in tile['keywords']:
+                    kw[k['name']] = k['value']
             
-            # Extract features (simplified - in production you'd have all 43)
-            features = {
-                'tile_position': tile.get('original_position', 1),
-                'is_boost': 1 if 'boost' in keywords.get('bet_type', '').lower() else 0,
-                'is_nco': 1 if tile.get('tile_type') == 'New Customer Offer' else 0,
-                'is_weekend': 1,  # Placeholder
-                'hour_of_day': 14,  # Placeholder (2pm)
-                'day_of_week': 5,  # Placeholder (Friday)
-                'tile_age_days': 0,  # Placeholder (new tile)
-                'user_total_sessions': 15 if user_type == 'power' else (5 if user_type == 'casual' else 1),
-                'user_sessions_with_clicks': 8 if user_type == 'power' else (2 if user_type == 'casual' else 0),
-                'tile_ctr_lagged': 0.02,  # Placeholder (would come from real-time system)
-            }
+            bet_type = kw.get('bet_type', '')
             
-            tile_features.append(features)
+            # Create feature dict (simplified - matching training features)
+            features = {}
+            
+            # Numeric features
+            features['tile_position'] = tile.get('original_position', tile.get('position', 1))
+            features['is_boost'] = 1 if 'boost' in bet_type.lower() else 0
+            features['is_nco'] = 1 if tile.get('tile_type') == 'New Customer Offer' else 0
+            features['is_weekend'] = 1
+            features['hour_of_day'] = 14
+            features['day_of_week'] = 5
+            features['tile_age_days'] = 0
+            features['tile_ctr_lagged'] = 0.02  # Would come from real-time system in production
+            
+            # User features based on profile
+            features['user_total_sessions'] = user_profile['sessions']
+            features['user_sessions_with_clicks'] = int(user_profile['sessions'] * 0.6)
+            
+            # Add all feature columns (one-hot encoded will be 0 by default)
+            for fname in feature_names:
+                if fname not in features:
+                    features[fname] = 0
+            
+            # Create DataFrame with correct column order
+            df_row = pd.DataFrame([features])[feature_names]
+            
+            # Get prediction
+            pred_uncal = model.predict_proba(df_row)[0][1]
+            pred = calibrator.transform([pred_uncal])[0]
+            
+            scored_tiles.append({
+                'tile': tile,
+                'score': float(pred),
+                'original_position': tile.get('original_position', tile.get('position', 0))
+            })
         
-        # Create DataFrame with features
-        df = pd.DataFrame(tile_features)
+        # Sort by score
+        scored_tiles.sort(key=lambda x: x['score'], reverse=True)
         
-        # Add one-hot encoded features (simplified)
-        for feature in feature_names:
-            if feature not in df.columns:
-                df[feature] = 0
-        
-        # Ensure column order matches training
-        df = df[feature_names]
-        
-        # Get predictions
-        predictions_uncal = model.predict_proba(df)[:, 1]
-        predictions = calibrator.transform(predictions_uncal)
-        
-        # Add scores to tiles
-        for i, tile in enumerate(tiles):
-            tile['ml_score'] = float(predictions[i])
-        
-        # Sort by ML score
-        tiles.sort(key=lambda x: x.get('ml_score', 0), reverse=True)
+        # Add recommended position and change
+        for i, item in enumerate(scored_tiles):
+            item['recommended_position'] = i + 1
+            item['change'] = item['original_position'] - item['recommended_position']
         
         return jsonify({
             'success': True,
-            'tiles': tiles,
-            'model_used': 'lightgbm_real_data',
-            'note': 'Using production model trained on real CTR data'
+            'tiles': scored_tiles,
+            'model': MODELS['lightgbm'],
+            'user_profile': user_profile
         })
         
     except Exception as e:
+        print(f"Error in rank_tiles: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             'success': False,
             'error': str(e)
         }), 500
-
-@app.route('/performance')
-def performance():
-    """Model performance metrics page"""
-    return render_template('performance.html', metrics=REAL_MODEL_PERFORMANCE)
-
-@app.route('/technical')
-def technical():
-    """Technical details and implementation"""
-    return render_template('technical.html', model_info=REAL_MODEL_PERFORMANCE)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
