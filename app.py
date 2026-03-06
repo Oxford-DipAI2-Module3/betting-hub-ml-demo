@@ -72,9 +72,39 @@ REAL_MODEL_PERFORMANCE = {
 @app.route('/')
 def index():
     """Landing page with model overview"""
-    return render_template('index.html', 
-                     models=REAL_MODEL_PERFORMANCE,  # Changed from model_info
-                     model_loaded=MODEL_LOADED)
+    # Format data to match old template structure
+    models_dict = {
+        'lightgbm': REAL_MODEL_PERFORMANCE
+    }
+    
+    user_profiles_dict = {
+        'new': {
+            'name': 'New User',
+            'strategy': 'First visit - show NCOs and popular bets',
+            'sessions': 0,
+            'preferred_bet_type': 'Single',
+            'preferred_bookmaker': 'Sky Bet'
+        },
+        'casual': {
+            'name': 'Casual Bettor',
+            'strategy': 'Occasional bettor - balanced mix',
+            'sessions': 5,
+            'preferred_bet_type': 'Acca',
+            'preferred_bookmaker': 'Sky Bet'
+        },
+        'power': {
+            'name': 'Power User',
+            'strategy': 'Frequent bettor - boost tiles and accas',
+            'sessions': 50,
+            'preferred_bet_type': 'Mega Acca',
+            'preferred_bookmaker': 'Sky Bet'
+        }
+    }
+    
+    return render_template('index.html',
+                         models=models_dict,
+                         user_profiles=user_profiles_dict,
+                         model_loaded=MODEL_LOADED)
 
 @app.route('/live-demo')
 def live_demo():
