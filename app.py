@@ -73,8 +73,8 @@ REAL_MODEL_PERFORMANCE = {
 def index():
     """Landing page with model overview"""
     return render_template('index.html', 
-                         model_info=REAL_MODEL_PERFORMANCE,
-                         model_loaded=MODEL_LOADED)
+                     models=REAL_MODEL_PERFORMANCE,  # Changed from model_info
+                     model_loaded=MODEL_LOADED)
 
 @app.route('/live-demo')
 def live_demo():
