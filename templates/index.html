@@ -1,446 +1,429 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2299.5">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Betting Hub ML Demo - Real Model</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+        }
+        .nav {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .nav-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav h1 { font-size: 1.5rem; }
+        .container {
+            max-width: 1600px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        .controls {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        .user-select {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .user-select select {
+            padding: 0.5rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .user-info {
+            background: #f8f9fa;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border-left: 4px solid #667eea;
+        }
+        .status {
+            font-size: 0.9rem;
+            color: #666;
+            padding: 0.5rem 0;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .panel {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .panel-header {
+            padding: 1.5rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .panel-header.blue { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
+        .panel-header.green { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; }
+        .panel-header.purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .panel-body {
+            padding: 1.5rem;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .tile {
+            background: #f8f9fa;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-radius: 8px;
+            border-left: 4px solid #ddd;
+            position: relative;
+        }
+        .tile.up { border-left-color: #43e97b; background: #f0fdf4; }
+        .tile.down { border-left-color: #f87171; background: #fef2f2; }
+        .tile-pos {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: #667eea;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .tile-desc {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            padding-right: 2rem;
+        }
+        .tile-meta {
+            display: flex;
+            gap: 0.75rem;
+            font-size: 0.75rem;
+            color: #666;
+            flex-wrap: wrap;
+        }
+        .tile-score {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: #667eea;
+            font-weight: 600;
+        }
+        .tile-change {
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .tile-change.up { color: #16a34a; }
+        .tile-change.down { color: #dc2626; }
+        .info-section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .info-section:last-child { border-bottom: none; }
+        .info-section h4 {
+            color: #667eea;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .info-metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .badge.success { background: #d1fae5; color: #065f46; }
+        .pros-cons {
+            list-style: none;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        .pros-cons li {
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+        .pros-cons li::before {
+            position: absolute;
+            left: 0;
+        }
+        .pros li::before { content: '✓'; color: #16a34a; }
+        .cons li::before { content: '⚠'; color: #f59e0b; }
+    </style>
 </head>
 <body>
-<p class="p1">&lt;!DOCTYPE html&gt;</p>
-<p class="p1">&lt;html&gt;</p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;Betting Hub ML Demo - Real Model&lt;/title&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>* { margin: 0; padding: 0; box-sizing: border-box; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>body {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: #f5f7fa;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #2c3e50;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.nav {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 1rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 2px 10px rgba(0,0,0,0.1);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.nav-content {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>max-width: 1600px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin: 0 auto;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>justify-content: space-between;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.nav h1 { font-size: 1.5rem; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.container {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>max-width: 1600px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin: 2rem auto;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 0 2rem;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.controls {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 1.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 12px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 2px 8px rgba(0,0,0,0.1);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 2rem;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.control-row {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>gap: 1.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex-wrap: wrap;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 1rem;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 1rem 2rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 1rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transition: transform 0.2s;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn:hover { transform: translateY(-2px); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn:disabled { background: #ccc; cursor: not-allowed; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.user-select {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>gap: 0.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.user-select select {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 0.5rem 1rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: 2px solid #e0e0e0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 6px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 1rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.user-info {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: #f8f9fa;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 0.8rem 1.2rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.9rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-left: 4px solid #667eea;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.status {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.9rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #666;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 0.5rem 0;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.grid {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: grid;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>grid-template-columns: 1fr 1fr 1fr;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>gap: 1.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 2rem;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.panel {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 12px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>overflow: hidden;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 2px 8px rgba(0,0,0,0.1);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.panel-header {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 1.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 1.1rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-bottom: 2px solid #f0f0f0;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.panel-header.blue { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.panel-header.green { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.panel-header.purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.panel-body {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 1.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>max-height: 600px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>overflow-y: auto;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.tile {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: #f8f9fa;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 1rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 0.75rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-left: 4px solid #ddd;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: relative;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.tile.up { border-left-color: #43e97b; background: #f0fdf4; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.tile.down { border-left-color: #f87171; background: #fef2f2; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.tile-pos {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: absolute;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>top: 0.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>right: 0.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: #667eea;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 28px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 28px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 50%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>justify-content: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.75rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.tile-desc {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.9rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 500;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 0.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding-right: 2rem;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.tile-meta {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>gap: 0.75rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.75rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #666;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex-wrap: wrap;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.tile-score {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-top: 0.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.8rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #667eea;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.tile-change {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-top: 0.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.75rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.tile-change.up { color: #16a34a; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.tile-change.down { color: #dc2626; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.info-section {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 1.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding-bottom: 1.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-bottom: 1px solid #e5e7eb;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.info-section:last-child { border-bottom: none; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.info-section h4 {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #667eea;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 0.75rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.9rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-transform: uppercase;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>letter-spacing: 0.5px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.info-metric {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>justify-content: space-between;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 0.5rem 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.9rem;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.badge {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: inline-block;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 0.25rem 0.75rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 12px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.75rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 0.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.badge.success { background: #d1fae5; color: #065f46; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.pros-cons {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>list-style: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.85rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>line-height: 1.6;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.pros-cons li {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding-left: 1.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 0.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: relative;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.pros-cons li::before {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: absolute;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>left: 0;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.pros li::before { content: '✓'; color: #16a34a; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.cons li::before { content: '⚠'; color: #f59e0b; }</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p1">&lt;body&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="nav"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="nav-content"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;h1&gt;🎯 Betting Hub ML Demo - Production Model&lt;/h1&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="container"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="controls"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="control-row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;button id="fetchBtn" class="btn"&gt;🔄 Fetch Live Tiles from Checkd API&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="user-select"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label&gt;User Type:&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;select id="userSelect"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;option value="new"&gt;🆕 New User (Cold Start)&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;option value="casual" selected&gt;👤 Casual User (5 sessions)&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;option value="power"&gt;⚡ Power User (50+ sessions)&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/select&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div id="userInfo" class="user-info"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="status" id="status"&gt;Click button to fetch live tiles from Checkd API&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="grid"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="panel"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="panel-header blue"&gt;📱 Current Order&lt;br&gt;&lt;small&gt;Checkd Production API&lt;/small&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="panel-body" id="currentFeed"&gt;Click button to load&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="panel"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="panel-header green"&gt;🚀 ML-Optimized&lt;br&gt;&lt;small id="mlModelName"&gt;Select a model&lt;/small&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="panel-body" id="mlFeed"&gt;Waiting for tiles...&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="panel"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="panel-header purple"&gt;📊 Model Info&lt;br&gt;&lt;small&gt;Performance &amp; Details&lt;/small&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="panel-body" id="modelInfo"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="badge success"&gt;Trained on Real Data&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;p style="font-size: 0.85rem; margin-bottom: 1rem;"&gt;LightGBM classifier trained on 300K real user impressions&lt;/p&gt;</p>
-<p class="p2"><span class="Apple-converted-space">                    </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="info-section"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;h4&gt;Performance Metrics&lt;/h4&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="info-metric"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;span&gt;AUC-ROC Score:&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;strong id="metricAUC"&gt;-&lt;/strong&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="info-metric"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;span&gt;Actual CTR:&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;strong id="metricActualCTR"&gt;-&lt;/strong&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="info-metric"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;span&gt;Predicted CTR:&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;strong id="metricPredictedCTR"&gt;-&lt;/strong&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="info-metric"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;span&gt;Training Period:&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;strong id="metricPeriod"&gt;-&lt;/strong&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="info-section"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;h4&gt;👤 Personalization&lt;/h4&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;p id="personalizationInfo" style="font-size: 0.85rem; line-height: 1.6;"&gt;-&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="info-section"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;h4&gt;✅ Advantages&lt;/h4&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;ul class="pros-cons pros" id="pros"&gt;&lt;/ul&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="info-section"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;h4&gt;⚠️ Limitations&lt;/h4&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;ul class="pros-cons cons" id="cons"&gt;&lt;/ul&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const MODELS = {{ models|tojson }};</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const USER_PROFILES = {{ user_profiles|tojson }};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>let currentTiles = [];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let currentModel = 'lightgbm';</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let currentUserType = 'casual';</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Initialize</p>
-<p class="p1"><span class="Apple-converted-space">        </span>displayModelInfo(MODELS[currentModel]);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>displayUserInfo(USER_PROFILES[currentUserType]);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('fetchBtn').addEventListener('click', fetchTiles);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('userSelect').addEventListener('change', (e) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>currentUserType = e.target.value;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>displayUserInfo(USER_PROFILES[currentUserType]);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (currentTiles.length &gt; 0) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>rankTiles(currentTiles);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>async function fetchTiles() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const btn = document.getElementById('fetchBtn');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const status = document.getElementById('status');</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>btn.disabled = true;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>status.textContent = '🔄 Fetching live tiles from Checkd API...';</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>try {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const res = await fetch('/api/fetch-tiles', {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>method: 'POST',</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>headers: {'Content-Type': 'application/json'}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>});</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const data = await res.json();</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (!data.success) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>status.textContent = `❌ Error: ${data.error}`;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>currentTiles = data.tiles;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>status.textContent = `✅ Fetched ${data.tiles.length} tiles. Applying ML...`;</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>displayCurrent(data.tiles);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>await rankTiles(data.tiles);</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>status.textContent = `✅ Complete! Showing ${data.tiles.length} tiles`;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} catch (e) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>status.textContent = `❌ Error: ${e.message}`;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} finally {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>btn.disabled = false;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function displayUserInfo(profile) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const info = document.getElementById('userInfo');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>info.innerHTML = `&lt;strong&gt;${profile.name}:&lt;/strong&gt; ${profile.strategy}`;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function displayCurrent(tiles) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const feed = document.getElementById('currentFeed');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>feed.innerHTML = tiles.map(t =&gt; createTile(t, t.position, false)).join('');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function createTile(tile, pos, showScore = false, score = null, change = null) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const kw = {};</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (tile.keywords) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>tile.keywords.forEach(k =&gt; kw[k.name] = k.value);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>let cls = '';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let changeHtml = '';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (change !== null) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (change &gt; 0) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>cls = 'up';</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>changeHtml = `&lt;div class="tile-change up"&gt;📈 UP ${change}&lt;/div&gt;`;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>} else if (change &lt; 0) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>cls = 'down';</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>changeHtml = `&lt;div class="tile-change down"&gt;📉 DOWN ${Math.abs(change)}&lt;/div&gt;`;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>const scoreHtml = showScore &amp;&amp; score ? `&lt;div class="tile-score"&gt;ML Score: ${score.toFixed(4)}&lt;/div&gt;` : '';</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>return `</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="tile ${cls}"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="tile-pos"&gt;${pos}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="tile-desc"&gt;${tile.description || 'N/A'}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="tile-meta"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span&gt;📊 ${kw.bet_type || 'N/A'}&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span&gt;🏢 ${kw.bookmaker || 'N/A'}&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span&gt;⚽ ${kw.sport || 'N/A'}&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>${scoreHtml}</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>${changeHtml}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>`;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>async function rankTiles(tiles) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const res = await fetch('/api/rank-tiles', {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>method: 'POST',</p>
-<p class="p1"><span class="Apple-converted-space">                </span>headers: {'Content-Type': 'application/json'},</p>
-<p class="p1"><span class="Apple-converted-space">                </span>body: JSON.stringify({tiles, model: currentModel, user_type: currentUserType})</p>
-<p class="p1"><span class="Apple-converted-space">            </span>});</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const data = await res.json();</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (!data.success) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('status').textContent = `❌ ${data.error}`;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>displayML(data.tiles);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>displayModelInfo(data.model);</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>const personalizationNote = data.user_profile.sessions &gt; 0 ?<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>'&lt;span style="color: #16a34a;"&gt;✓ PERSONALIZED&lt;/span&gt;' :<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>'&lt;span style="color: #f59e0b;"&gt;⚠ COLD START&lt;/span&gt;';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('mlModelName').innerHTML = `${data.model.name} ${personalizationNote}`;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function displayML(scored) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const feed = document.getElementById('mlFeed');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>feed.innerHTML = scored.map(s =&gt;<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>createTile(s.tile, s.recommended_position, true, s.score, s.change)</p>
-<p class="p1"><span class="Apple-converted-space">            </span>).join('');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function displayModelInfo(model) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('metricAUC').textContent = model.auc_roc ? model.auc_roc.toFixed(4) : 'N/A';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('metricActualCTR').textContent = model.actual_ctr || 'N/A';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('metricPredictedCTR').textContent = model.predicted_ctr || 'N/A';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('metricPeriod').textContent = model.training_period || 'N/A';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('personalizationInfo').textContent = model.personalization || 'N/A';</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>const prosEl = document.getElementById('pros');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>prosEl.innerHTML = model.pros.map(p =&gt; `&lt;li&gt;${p}&lt;/li&gt;`).join('');</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>const consEl = document.getElementById('cons');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>consEl.innerHTML = model.cons.map(c =&gt; `&lt;li&gt;${c}&lt;/li&gt;`).join('');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p1">&lt;/html&gt;</p>
+    <div class="nav">
+        <div class="nav-content">
+            <h1>🎯 Betting Hub ML Demo - Production Model</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="controls">
+            <div class="control-row">
+                <button id="fetchBtn" class="btn">🔄 Fetch Live Tiles from Checkd API</button>
+                <div class="user-select">
+                    <label>User Type:</label>
+                    <select id="userSelect">
+                        <option value="new">🆕 New User (Cold Start)</option>
+                        <option value="casual" selected>👤 Casual User (5 sessions)</option>
+                        <option value="power">⚡ Power User (50+ sessions)</option>
+                    </select>
+                </div>
+                <div id="userInfo" class="user-info"></div>
+            </div>
+            <div class="status" id="status">Click button to fetch live tiles from Checkd API</div>
+        </div>
+
+        <div class="grid">
+            <div class="panel">
+                <div class="panel-header blue">📱 Current Order<br><small>Checkd Production API</small></div>
+                <div class="panel-body" id="currentFeed">Click button to load</div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header green">🚀 ML-Optimized<br><small id="mlModelName">Select a model</small></div>
+                <div class="panel-body" id="mlFeed">Waiting for tiles...</div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header purple">📊 Model Info<br><small>Performance & Details</small></div>
+                <div class="panel-body" id="modelInfo">
+                    <div class="badge success">Trained on Real Data</div>
+                    <p style="font-size: 0.85rem; margin-bottom: 1rem;">LightGBM classifier trained on 300K real user impressions</p>
+                    
+                    <div class="info-section">
+                        <h4>Performance Metrics</h4>
+                        <div class="info-metric">
+                            <span>AUC-ROC Score:</span>
+                            <strong id="metricAUC">-</strong>
+                        </div>
+                        <div class="info-metric">
+                            <span>Actual CTR:</span>
+                            <strong id="metricActualCTR">-</strong>
+                        </div>
+                        <div class="info-metric">
+                            <span>Predicted CTR:</span>
+                            <strong id="metricPredictedCTR">-</strong>
+                        </div>
+                        <div class="info-metric">
+                            <span>Training Period:</span>
+                            <strong id="metricPeriod">-</strong>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h4>👤 Personalization</h4>
+                        <p id="personalizationInfo" style="font-size: 0.85rem; line-height: 1.6;">-</p>
+                    </div>
+
+                    <div class="info-section">
+                        <h4>✅ Advantages</h4>
+                        <ul class="pros-cons pros" id="pros"></ul>
+                    </div>
+
+                    <div class="info-section">
+                        <h4>⚠️ Limitations</h4>
+                        <ul class="pros-cons cons" id="cons"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MODELS = {{ models|tojson }};
+        const USER_PROFILES = {{ user_profiles|tojson }};
+
+        let currentTiles = [];
+        let currentModel = 'lightgbm';
+        let currentUserType = 'casual';
+
+        displayModelInfo(MODELS[currentModel]);
+        displayUserInfo(USER_PROFILES[currentUserType]);
+
+        document.getElementById('fetchBtn').addEventListener('click', fetchTiles);
+        document.getElementById('userSelect').addEventListener('change', (e) => {
+            currentUserType = e.target.value;
+            displayUserInfo(USER_PROFILES[currentUserType]);
+            if (currentTiles.length > 0) {
+                rankTiles(currentTiles);
+            }
+        });
+
+        async function fetchTiles() {
+            const btn = document.getElementById('fetchBtn');
+            const status = document.getElementById('status');
+            
+            btn.disabled = true;
+            status.textContent = '🔄 Fetching live tiles from Checkd API...';
+            
+            try {
+                const res = await fetch('/api/fetch-tiles', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                const data = await res.json();
+                
+                if (!data.success) {
+                    status.textContent = `❌ Error: ${data.error}`;
+                    return;
+                }
+                
+                currentTiles = data.tiles;
+                status.textContent = `✅ Fetched ${data.tiles.length} tiles. Applying ML...`;
+                
+                displayCurrent(data.tiles);
+                await rankTiles(data.tiles);
+                
+                status.textContent = `✅ Complete! Showing ${data.tiles.length} tiles`;
+            } catch (e) {
+                status.textContent = `❌ Error: ${e.message}`;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function displayUserInfo(profile) {
+            const info = document.getElementById('userInfo');
+            info.innerHTML = `<strong>${profile.name}:</strong> ${profile.strategy}`;
+        }
+
+        function displayCurrent(tiles) {
+            const feed = document.getElementById('currentFeed');
+            feed.innerHTML = tiles.map(t => createTile(t, t.position, false)).join('');
+        }
+
+        function createTile(tile, pos, showScore = false, score = null, change = null) {
+            const kw = {};
+            if (tile.keywords) {
+                tile.keywords.forEach(k => kw[k.name] = k.value);
+            }
+
+            let cls = '';
+            let changeHtml = '';
+            if (change !== null) {
+                if (change > 0) {
+                    cls = 'up';
+                    changeHtml = `<div class="tile-change up">📈 UP ${change}</div>`;
+                } else if (change < 0) {
+                    cls = 'down';
+                    changeHtml = `<div class="tile-change down">📉 DOWN ${Math.abs(change)}</div>`;
+                }
+            }
+
+            const scoreHtml = showScore && score ? `<div class="tile-score">ML Score: ${score.toFixed(4)}</div>` : '';
+
+            return `
+                <div class="tile ${cls}">
+                    <div class="tile-pos">${pos}</div>
+                    <div class="tile-desc">${tile.description || 'N/A'}</div>
+                    <div class="tile-meta">
+                        <span>📊 ${kw.bet_type || 'N/A'}</span>
+                        <span>🏢 ${kw.bookmaker || 'N/A'}</span>
+                        <span>⚽ ${kw.sport || 'N/A'}</span>
+                    </div>
+                    ${scoreHtml}
+                    ${changeHtml}
+                </div>
+            `;
+        }
+
+        async function rankTiles(tiles) {
+            const res = await fetch('/api/rank-tiles', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({tiles, model: currentModel, user_type: currentUserType})
+            });
+            const data = await res.json();
+            
+            if (!data.success) {
+                document.getElementById('status').textContent = `❌ ${data.error}`;
+                return;
+            }
+            
+            displayML(data.tiles);
+            displayModelInfo(data.model);
+            
+            const personalizationNote = data.user_profile.sessions > 0 ? 
+                '<span style="color: #16a34a;">✓ PERSONALIZED</span>' : 
+                '<span style="color: #f59e0b;">⚠ COLD START</span>';
+            document.getElementById('mlModelName').innerHTML = `${data.model.name} ${personalizationNote}`;
+        }
+
+        function displayML(scored) {
+            const feed = document.getElementById('mlFeed');
+            feed.innerHTML = scored.map(s => 
+                createTile(s.tile, s.recommended_position, true, s.score, s.change)
+            ).join('');
+        }
+
+        function displayModelInfo(model) {
+            document.getElementById('metricAUC').textContent = model.auc_roc ? model.auc_roc.toFixed(4) : 'N/A';
+            document.getElementById('metricActualCTR').textContent = model.actual_ctr || 'N/A';
+            document.getElementById('metricPredictedCTR').textContent = model.predicted_ctr || 'N/A';
+            document.getElementById('metricPeriod').textContent = model.training_period || 'N/A';
+            document.getElementById('personalizationInfo').textContent = model.personalization || 'N/A';
+            
+            const prosEl = document.getElementById('pros');
+            prosEl.innerHTML = model.pros.map(p => `<li>${p}</li>`).join('');
+            
+            const consEl = document.getElementById('cons');
+            consEl.innerHTML = model.cons.map(c => `<li>${c}</li>`).join('');
+        }
+    </script>
 </body>
 </html>
