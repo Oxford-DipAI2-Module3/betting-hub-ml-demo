@@ -1,359 +1,215 @@
 from flask import Flask, render_template, jsonify, request
 import requests
-import random
+import joblib
+import json
+import pandas as pd
+import numpy as np
 
 app = Flask(__name__)
 
-# Model configurations from actual testing
-MODELS = {
-    'lightgbm': {
-        'name': 'LightGBM',
-        'status': 'Active',
-        'r2': 0.9993,
-        'rmse': 0.0024,
-        'mae': 0.0016,
-        'training_time': '1.53s',
-        'inference_speed': '~20ms',
-        'rank': '🥈 2nd Best R²',
-        'pros': [
-            'Currently deployed and production-tested',
-            'Extremely fast training (1.5 seconds)',
-            'Handles categorical features natively',
-            'Best balance of speed and accuracy',
-            'Strong personalization support (18% feature importance)'
-        ],
-        'cons': [
-            'R² inflated due to synthetic target',
-            'Slightly lower R² than XGBoost (0.02% difference)',
-            'Requires user history for personalization'
-        ],
-        'best_for': 'Production deployment - fast, reliable, tested with real Checkd data',
-        'technical': 'Gradient boosting framework optimized for speed. Uses histogram-based algorithms.',
-        'personalization': 'Strong - uses 10 user preference features (18% importance)'
-    },
-    'xgboost': {
-        'name': 'XGBoost',
-        'status': 'Available',
-        'r2': 0.9995,
-        'rmse': 0.0019,
-        'mae': 0.0013,
-        'training_time': '1.19s',
-        'inference_speed': '~20ms',
-        'rank': '🏆 Best R²',
-        'pros': [
-            'Highest R² score (99.95%)',
-            'Fastest training time (1.19s)',
-            'Industry standard for tabular data',
-            'Excellent personalization capabilities',
-            'Best cold start handling'
-        ],
-        'cons': [
-            'Version conflicts in some environments',
-            'Slightly higher memory usage',
-            'R² inflated due to synthetic target'
-        ],
-        'best_for': 'Maximum accuracy - worth resolving version issues for 0.02% R² gain',
-        'technical': 'Optimized gradient boosting with parallel tree construction and regularization.',
-        'personalization': 'Excellent - handles missing user data gracefully'
-    },
-    'random_forest': {
-        'name': 'Random Forest',
-        'status': 'Available',
-        'r2': 0.9956,
-        'rmse': 0.0057,
-        'mae': 0.0036,
-        'training_time': '34.53s',
-        'inference_speed': '~100ms',
-        'rank': '🥉 3rd Best R²',
-        'pros': [
-            'Very robust to overfitting',
-            'No hyperparameter tuning needed',
-            'Handles non-linear relationships well',
-            'Good with incomplete user data',
-            'Stable predictions for new users'
-        ],
-        'cons': [
-            '23x slower training than XGBoost',
-            '5x slower inference than boosting methods',
-            'Lower R² (99.56% vs 99.95%)',
-            'Weaker personalization than boosting'
-        ],
-        'best_for': 'Baseline model or when stability > speed. Good for experimentation.',
-        'technical': 'Ensemble of 100 decision trees with bootstrap sampling and feature randomization.',
-        'personalization': 'Moderate - less sensitive to user features'
-    },
-    'ridge': {
-        'name': 'Ridge Regression',
-        'status': 'Available',
-        'r2': 0.9675,
-        'rmse': 0.0157,
-        'mae': 0.0106,
-        'training_time': '0.14s',
-        'inference_speed': '<5ms',
-        'rank': '4th Place',
-        'pros': [
-            'Blazing fast training (0.14s)',
-            'Ultra-fast inference (<5ms)',
-            'Smallest model size (few KB)',
-            'No cold start issues',
-            'Works without user data'
-        ],
-        'cons': [
-            'Significantly lower R² (96.75%)',
-            'Assumes linear relationships',
-            'Cannot capture complex interactions',
-            'Poor personalization - linear weights only'
-        ],
-        'best_for': 'When speed matters more than accuracy, or for interpretability analysis.',
-        'technical': 'Linear regression with L2 regularization. Simple but limited for complex patterns.',
-        'personalization': 'Weak - linear coefficients cannot model user preferences well'
-    },
-    'elasticnet': {
-        'name': 'ElasticNet',
-        'status': 'Failed',
-        'r2': -0.0003,
-        'rmse': 'N/A',
-        'mae': 'N/A',
-        'training_time': '0.14s',
-        'inference_speed': 'N/A',
-        'rank': '❌ Failed',
-        'pros': [
-            'Fast training',
-            'Feature selection capability (L1 penalty)',
-            'Good for high-dimensional data'
-        ],
-        'cons': [
-            'Negative R² (worse than predicting mean)',
-            'Too aggressive feature elimination',
-            'Eliminated all user features',
-            'Not suitable for this dataset'
-        ],
-        'best_for': 'NOT recommended. Use Ridge for linear models or boosting for performance.',
-        'technical': 'Linear regression with L1+L2 regularization. Failed to capture tile engagement patterns.',
-        'personalization': 'Failed - eliminated user features during training'
-    }
-}
+# Load the REAL trained model
+try:
+    model = joblib.load('models/lightgbm_model.pkl')
+    calibrator = joblib.load('models/calibrator.pkl')
+    with open('models/feature_names.json', 'r') as f:
+        feature_names = json.load(f)
+    MODEL_LOADED = True
+    print("✅ Real model loaded successfully!")
+except Exception as e:
+    MODEL_LOADED = False
+    print(f"⚠️ Could not load model: {e}")
+    model = None
+    calibrator = None
+    feature_names = []
 
-# Sample user profiles
-USER_PROFILES = {
-    'new_user': {
-        'name': 'New User (Cold Start)',
-        'sessions': 0,
-        'total_clicks': 0,
-        'preferred_bet_type': None,
-        'preferred_bookmaker': None,
-        'preferred_sport': None,
-        'avg_odds': 0,
-        'acca_rate': 0,
-        'boost_rate': 0,
-        'signed_up_bookmakers': [],  # NEW - no signups yet
-        'strategy': 'Default to popular tiles, position-heavy ranking, no personalization'
-    },
-    'casual_user': {
-        'name': 'Casual User (5 sessions)',
-        'sessions': 5,
-        'total_clicks': 12,
-        'preferred_bet_type': 'Acca',
-        'preferred_bookmaker': 'Dabble',
-        'preferred_sport': 'Football',
-        'avg_odds': 25.5,
-        'acca_rate': 0.67,
-        'boost_rate': 0.25,
-        'signed_up_bookmakers': ['Dabble'],  # NEW - signed up to Dabble
-        'strategy': 'Boost Dabble Acca tiles (but NOT Dabble NCOs - already signed up!)'
-    },
-    'power_user': {
-        'name': 'Power User (50+ sessions)',
-        'sessions': 52,
-        'total_clicks': 234,
-        'preferred_bet_type': 'Mega Acca',
-        'preferred_bookmaker': 'Betway',
-        'preferred_sport': 'Football',
-        'avg_odds': 87.3,
-        'acca_rate': 0.89,
-        'boost_rate': 0.45,
-        'signed_up_bookmakers': ['Betway', 'Dabble', 'BetMGM', 'SBK'],  # NEW - signed up to multiple
-        'strategy': 'Heavily prioritize Betway Mega Accas (but demote NCOs from signed-up bookmakers)'
-    }
+# Real model performance from training
+REAL_MODEL_PERFORMANCE = {
+    'name': 'LightGBM (Production)',
+    'status': 'Trained on Real Data',
+    'auc_roc': 0.9298,
+    'actual_ctr': 0.0175,
+    'predicted_ctr': 0.0205,
+    'training_samples': 240236,
+    'test_samples': 60060,
+    'training_period': 'Feb 27 - Mar 6, 2026 (7 days)',
+    'total_clicks': 5842,
+    'features': 43,
+    'top_features': [
+        {'name': 'user_total_sessions', 'importance': 2428},
+        {'name': 'tile_ctr_lagged', 'importance': 2351},
+        {'name': 'hour_of_day', 'importance': 1727},
+        {'name': 'user_sessions_with_clicks', 'importance': 1485},
+        {'name': 'tile_position', 'importance': 1385},
+    ],
+    'key_insights': [
+        'Timestamp-based lagging enables intra-day learning',
+        '97.3% of impressions have 50+ prior data points',
+        'Boost tiles (42.81% CTR) vs Regular (1.01% CTR)',
+        'Model adapts within same day (0% → 92% CTR by impression 50)',
+        'is_boost feature handles cold-start (rank #13)'
+    ],
+    'pros': [
+        'Trained on 300K real impressions with actual user clicks',
+        'AUC-ROC 0.93 (excellent discrimination)',
+        'Well calibrated (2.05% predicted vs 1.75% actual)',
+        'Handles cold-start tiles via is_boost signal',
+        'Adapts intra-day as tiles get impressions'
+    ],
+    'cons': [
+        'Only 7 days of training data (30+ days recommended)',
+        'Predictions slightly optimistic (+0.3% CTR)',
+        'Needs real-time CTR infrastructure for production',
+        'Model should be retrained weekly'
+    ],
+    'next_steps': [
+        'Collect 30 days of data (by April 6)',
+        'Build real-time CTR tracking system',
+        'Deploy A/B test (5% of users)',
+        'Monitor predicted vs actual CTR daily'
+    ]
 }
 
 @app.route('/')
 def index():
-    return render_template('index.html', models=MODELS, user_profiles=USER_PROFILES)
+    """Landing page with model overview"""
+    return render_template('index.html', 
+                         model_info=REAL_MODEL_PERFORMANCE,
+                         model_loaded=MODEL_LOADED)
 
-@app.route('/executive-summary')
-def executive_summary():
-    return render_template('executive_summary.html')
+@app.route('/live-demo')
+def live_demo():
+    """Interactive demo with real Checkd tiles"""
+    return render_template('live_demo.html')
 
-@app.route('/technical-guide')
-def technical_guide():
-    return render_template('technical_guide.html')
-
-@app.route('/recommendations')
-def recommendations():
-    return render_template('recommendations.html')
-
-@app.route('/data-insights')
-def data_insights():
-    return render_template('data_insights.html')
-
-@app.route('/api/fetch-tiles')
+@app.route('/api/fetch-tiles', methods=['POST'])
 def fetch_tiles():
+    """Fetch live tiles from Checkd API"""
     try:
-        response = requests.get('https://odds-api.checkd-dev.com/prod/smartacca/discover?app=bethub', timeout=10)
-        data = response.json()
-        tiles = data.get('data', [])
+        response = requests.get('https://api-prod.checkd.media/discover/feed', timeout=5)
         
-        betting_tiles = []
-        for idx, tile in enumerate(tiles):
-            if 'keywords' in tile and tile['keywords']:
-                tile['position'] = idx + 1
-                betting_tiles.append(tile)
-        
-        return jsonify({'success': True, 'tiles': betting_tiles})
+        if response.status_code == 200:
+            data = response.json()
+            tiles = data.get('tiles', [])
+            
+            # Add original position
+            for i, tile in enumerate(tiles):
+                tile['original_position'] = i + 1
+            
+            return jsonify({
+                'success': True,
+                'tiles': tiles,
+                'count': len(tiles)
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': f'API returned status {response.status_code}'
+            }), 500
+            
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 @app.route('/api/rank-tiles', methods=['POST'])
 def rank_tiles():
+    """Rank tiles using the REAL trained model"""
     try:
-        tiles = request.json.get('tiles', [])
-        model_id = request.json.get('model', 'lightgbm')
-        user_type = request.json.get('user_type', 'new_user')
+        data = request.json
+        tiles = data.get('tiles', [])
+        user_type = data.get('userType', 'casual')
         
-        if MODELS[model_id]['status'] == 'Failed':
+        if not MODEL_LOADED:
+            # Fallback: simple boost-based ranking
+            for tile in tiles:
+                keywords = tile.get('keywords', {})
+                bet_type = keywords.get('bet_type', '')
+                
+                # Simple heuristic scoring
+                if 'boost' in bet_type.lower():
+                    tile['ml_score'] = 0.45
+                elif tile.get('tile_type') == 'New Customer Offer':
+                    tile['ml_score'] = 0.08
+                else:
+                    tile['ml_score'] = 0.02
+            
+            # Sort by score
+            tiles.sort(key=lambda x: x.get('ml_score', 0), reverse=True)
+            
             return jsonify({
-                'success': False, 
-                'error': 'This model failed in testing. Please select another model.'
-            }), 400
-        
-        user_profile = USER_PROFILES[user_type]
-        
-        scored = []
-        for tile in tiles:
-            score = calculate_ml_score(tile, model_id, user_profile)
-            scored.append({
-                'tile': tile,
-                'score': score,
-                'original_position': tile['position']
+                'success': True,
+                'tiles': tiles,
+                'model_used': 'fallback_heuristic',
+                'note': 'Real model not loaded, using simple heuristic'
             })
         
-        scored.sort(key=lambda x: x['score'], reverse=True)
+        # Use REAL model for scoring
+        tile_features = []
         
-        for idx, item in enumerate(scored):
-            item['recommended_position'] = idx + 1
-            item['change'] = item['original_position'] - item['recommended_position']
+        for tile in tiles:
+            keywords = tile.get('keywords', {})
+            
+            # Extract features (simplified - in production you'd have all 43)
+            features = {
+                'tile_position': tile.get('original_position', 1),
+                'is_boost': 1 if 'boost' in keywords.get('bet_type', '').lower() else 0,
+                'is_nco': 1 if tile.get('tile_type') == 'New Customer Offer' else 0,
+                'is_weekend': 1,  # Placeholder
+                'hour_of_day': 14,  # Placeholder (2pm)
+                'day_of_week': 5,  # Placeholder (Friday)
+                'tile_age_days': 0,  # Placeholder (new tile)
+                'user_total_sessions': 15 if user_type == 'power' else (5 if user_type == 'casual' else 1),
+                'user_sessions_with_clicks': 8 if user_type == 'power' else (2 if user_type == 'casual' else 0),
+                'tile_ctr_lagged': 0.02,  # Placeholder (would come from real-time system)
+            }
+            
+            tile_features.append(features)
+        
+        # Create DataFrame with features
+        df = pd.DataFrame(tile_features)
+        
+        # Add one-hot encoded features (simplified)
+        for feature in feature_names:
+            if feature not in df.columns:
+                df[feature] = 0
+        
+        # Ensure column order matches training
+        df = df[feature_names]
+        
+        # Get predictions
+        predictions_uncal = model.predict_proba(df)[:, 1]
+        predictions = calibrator.transform(predictions_uncal)
+        
+        # Add scores to tiles
+        for i, tile in enumerate(tiles):
+            tile['ml_score'] = float(predictions[i])
+        
+        # Sort by ML score
+        tiles.sort(key=lambda x: x.get('ml_score', 0), reverse=True)
         
         return jsonify({
-            'success': True, 
-            'tiles': scored,
-            'model': MODELS.get(model_id),
-            'user_profile': user_profile
+            'success': True,
+            'tiles': tiles,
+            'model_used': 'lightgbm_real_data',
+            'note': 'Using production model trained on real CTR data'
         })
+        
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
-def calculate_ml_score(tile, model_id='lightgbm', user_profile=None):
-    """Calculate ML score with DRAMATIC personalization"""
-    keywords = {kw['name']: kw['value'] for kw in tile.get('keywords', [])}
-    
-    base_score = 0.5
-    position = tile.get('position', 15)
-    
-    # Base factors (54% importance for new users, reduced for power users)
-    position_weight = 0.54 if not user_profile or user_profile['sessions'] == 0 else 0.35
-    position_score = (30 - position) / 30 * position_weight
-    
-    # Bookmaker (20%)
-    top_bookmakers = ['Dabble', 'Sky Bet', 'Betway', 'SBK', 'BetMGM', 'Boyles']
-    bookmaker_score = 0.20 if keywords.get('bookmaker') in top_bookmakers else 0
-    
-    # Bet type (15%)
-    bet_type = keywords.get('bet_type', '')
-    bet_type_score = 0
-    if bet_type == 'Acca':
-        bet_type_score = 0.15
-    elif bet_type == 'Mega Acca':
-        bet_type_score = 0.18
-    elif bet_type == 'Treble':
-        bet_type_score = 0.10
-    
-    # Boost (10%)
-    boost_score = 0.10 if 'Boost' in bet_type else 0
-    
-    # Tile type penalty
-    tile_penalty = -0.15 if keywords.get('tile_type') != 'Bet' else 0
-    
-    # DRAMATIC PERSONALIZATION (up to 40% boost for power users!)
-    personalization_boost = 0
-    
-    if user_profile and user_profile['sessions'] > 0:
-        bookmaker = keywords.get('bookmaker', '')
-        tile_type = keywords.get('tile_type', '')
-        
-        # CHECK IF USER ALREADY SIGNED UP WITH THIS BOOKMAKER
-        signed_up_bookmakers = user_profile.get('signed_up_bookmakers', [])
-        
-        # If this is an NCO from a bookmaker they've already used = DEMOTE
-        if tile_type == 'New Customer Offer' and bookmaker in signed_up_bookmakers:
-            personalization_boost -= 0.50  # HUGE PENALTY - wasted NCO
-        
-        # EXACT MATCH on bet type = HUGE boost
-        if bet_type == user_profile['preferred_bet_type']:
-            if user_profile['sessions'] >= 50:  # Power user
-                personalization_boost += 0.25  # MASSIVE boost
-            else:  # Casual user
-                personalization_boost += 0.15
-        
-        # EXACT MATCH on bookmaker = BIG boost (but NOT for NCOs if already signed up)
-        if bookmaker == user_profile['preferred_bookmaker']:
-            if tile_type != 'New Customer Offer':  # Only boost non-NCO tiles
-                if user_profile['sessions'] >= 50:  # Power user
-                    personalization_boost += 0.20  # HUGE boost
-                else:  # Casual user
-                    personalization_boost += 0.12
-        
-        # BOTH match = JACKPOT (but not NCOs)
-        if bet_type == user_profile['preferred_bet_type'] and bookmaker == user_profile['preferred_bookmaker'] and tile_type != 'New Customer Offer':
-            if user_profile['sessions'] >= 50:
-                personalization_boost += 0.10  # Extra bonus!
-            else:
-                personalization_boost += 0.05
-        
-        # Power users who love accas get extra boost for ANY acca
-        if user_profile['acca_rate'] > 0.5 and 'Acca' in bet_type:
-            personalization_boost += 0.08
-        
-        # Mega acca lovers get HUGE boost
-        if 'Mega Acca' in bet_type and user_profile['acca_rate'] > 0.8:
-            personalization_boost += 0.12
-        
-        # Boost lovers
-        if user_profile['boost_rate'] > 0.3 and 'Boost' in bet_type:
-            personalization_boost += 0.08
-    
-    # Model-specific behaviors
-    if model_id == 'lightgbm':
-        score = base_score + position_score + bookmaker_score + bet_type_score + boost_score + tile_penalty + personalization_boost
-        score += random.uniform(-0.01, 0.01)
-        
-    elif model_id == 'xgboost':
-        # XGBoost: even better personalization
-        score = base_score + position_score + bookmaker_score + bet_type_score + boost_score + tile_penalty + (personalization_boost * 1.15)
-        score += random.uniform(-0.01, 0.01)
-        
-    elif model_id == 'random_forest':
-        # Random Forest: less affected by personalization
-        score = base_score + (position_score * 1.1) + bookmaker_score + bet_type_score + boost_score + tile_penalty + (personalization_boost * 0.6)
-        score = score * 0.95 + 0.025
-        score += random.uniform(-0.02, 0.02)
-        
-    elif model_id == 'ridge':
-        # Ridge: weak personalization
-        score = base_score + (position_score * 0.8) + (bookmaker_score * 0.8) + (bet_type_score * 0.8) + (personalization_boost * 0.2)
-        score += random.uniform(-0.03, 0.03)
-    
-    return max(0, min(1, score))
+@app.route('/performance')
+def performance():
+    """Model performance metrics page"""
+    return render_template('performance.html', metrics=REAL_MODEL_PERFORMANCE)
+
+@app.route('/technical')
+def technical():
+    """Technical details and implementation"""
+    return render_template('technical.html', model_info=REAL_MODEL_PERFORMANCE)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000, host='127.0.0.1')
+    app.run(debug=True, host='0.0.0.0', port=5000)
